@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>АРМА — Калькулятор сегментации клиента</title>
+<style>
+  :root{
+    --ink:#1B2A41; --paper:#F6F7F9; --card:#FFFFFF; --seal:#8C2F39;
+    --steel:#5C6672; --line:#DDE2E8; --green:#2E7D5B;
+    --amber:#B47B1F; --amber-bg:#FBF3E2; --seal-bg:#F7ECED;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    background:var(--paper);color:var(--ink);line-height:1.5;padding:0 16px 64px}
+  .wrap{max-width:1060px;margin:0 auto}
+  header{padding:28px 0 20px;border-bottom:2px solid var(--ink);margin-bottom:24px}
+  .brand{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--seal);font-weight:700}
+  h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(24px,4vw,34px);font-weight:700;margin-top:6px}
+  .sub{color:var(--steel);font-size:14px;margin-top:6px;max-width:680px}
+
+  .layout{display:grid;grid-template-columns:1fr;gap:24px}
+  @media(min-width:900px){.layout{grid-template-columns:1fr 400px;align-items:start}}
+
+  .q{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 18px 16px;margin-bottom:14px}
+  .q h2{font-size:15px;font-weight:700;margin-bottom:4px}
+  .q .hint{font-size:12.5px;color:var(--steel);margin-bottom:12px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{border:1.5px solid var(--line);background:#fff;border-radius:24px;padding:9px 15px;font-size:14px;
+    cursor:pointer;color:var(--ink);transition:border-color .12s,background .12s;-webkit-tap-highlight-color:transparent}
+  .chip:hover{border-color:var(--ink)}
+  .chip:focus-visible{outline:3px solid var(--seal);outline-offset:2px}
+  .chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:600}
+  .checks label{display:flex;gap:10px;align-items:flex-start;font-size:14px;padding:8px 4px;cursor:pointer;border-radius:6px}
+  .checks input{width:17px;height:17px;margin-top:2px;accent-color:var(--seal);flex-shrink:0}
+  .num{display:inline-block;font-family:Georgia,serif;color:var(--seal);font-weight:700;margin-right:6px}
+
+  /* Кейсы */
+  .casebar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+  .casebar input[type="search"]{flex:1 1 180px;padding:9px 12px;border:1.5px solid var(--line);border-radius:8px;font-size:14px}
+  .casebar select{flex:0 1 auto;padding:9px 10px;border:1.5px solid var(--line);border-radius:8px;font-size:13.5px;background:#fff;color:var(--ink);max-width:100%}
+  .casebar input:focus-visible,.casebar select:focus-visible{outline:3px solid var(--seal);outline-offset:1px}
+  .caselist{max-height:420px;overflow-y:auto;border-top:1px solid var(--line)}
+  .case{padding:10px 4px;border-bottom:1px solid var(--line);font-size:13.5px}
+  .case .nm{font-weight:700}
+  .case .meta{color:var(--steel);font-size:12px;margin:1px 0 4px}
+  .case .hook{display:inline-block;background:var(--seal-bg);color:var(--seal);font-weight:700;font-size:11.5px;
+    border-radius:4px;padding:1px 7px;margin-left:6px;vertical-align:1px}
+  .case a{color:var(--seal);font-weight:600;font-size:13px;text-decoration:none}
+  .case a:hover{text-decoration:underline}
+  .case a:focus-visible{outline:3px solid var(--seal);outline-offset:2px}
+  .count{font-size:12px;color:var(--steel);margin-bottom:6px}
+
+  .result{position:sticky;top:16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:22px;box-shadow:0 2px 10px rgba(27,42,65,.06)}
+  .card h2{font-family:Georgia,serif;font-size:19px;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:14px}
+  .empty{color:var(--steel);font-size:14px;padding:8px 0 4px}
+  .empty b{color:var(--ink)}
+  .sealwrap{display:flex;gap:16px;align-items:center;margin-bottom:16px}
+  .seal{width:118px;height:118px;flex-shrink:0;border-radius:50%;border:2.5px solid var(--seal);
+    display:flex;align-items:center;justify-content:center;text-align:center;color:var(--seal);
+    position:relative;transform:rotate(-6deg);
+    background:radial-gradient(circle at 50% 50%, #fff 62%, var(--seal-bg) 100%)}
+  .seal::before{content:"";position:absolute;inset:5px;border:1px solid var(--seal);border-radius:50%;opacity:.55}
+  .seal .in{font-size:12.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;line-height:1.25;padding:0 10px}
+  .seal .in small{display:block;font-weight:600;font-size:9.5px;letter-spacing:.14em;margin-top:3px;opacity:.75}
+  .segname{font-size:15px;font-weight:700}
+  .segdesc{font-size:12.5px;color:var(--steel);margin-top:2px}
+  .row{margin-bottom:14px}
+  .lbl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);font-weight:700;margin-bottom:5px}
+  .price{font-family:Consolas,"SF Mono",Menlo,monospace;font-size:14.5px}
+  .price .std{text-decoration:line-through;color:var(--steel);margin-right:8px}
+  .price .promo{color:var(--green);font-weight:700;font-size:17px}
+  .price .one{color:var(--ink);font-weight:700;font-size:17px}
+  .kp{font-size:13.5px;background:var(--paper);border:1px dashed var(--steel);border-radius:6px;padding:7px 10px;font-family:Consolas,Menlo,monospace}
+  ul.args{list-style:none}
+  ul.args li{font-size:13.5px;padding:5px 0 5px 18px;position:relative;border-bottom:1px dotted var(--line)}
+  ul.args li:last-child{border-bottom:none}
+  ul.args li::before{content:"§";position:absolute;left:0;color:var(--seal);font-weight:700}
+  .rcase{font-size:13px;padding:7px 0;border-bottom:1px dotted var(--line)}
+  .rcase:last-child{border-bottom:none}
+  .rcase b{display:block}
+  .rcase .meta{color:var(--steel);font-size:11.5px}
+  .rcase a{color:var(--seal);font-weight:600;text-decoration:none;font-size:12.5px}
+  .rcase a:hover{text-decoration:underline}
+  .close-line{font-size:13.5px;background:var(--paper);border-left:3px solid var(--ink);padding:8px 12px;border-radius:0 6px 6px 0;font-style:italic}
+  .warn{background:var(--amber-bg);border-left:3px solid var(--amber);padding:8px 12px;border-radius:0 6px 6px 0;font-size:13px;margin-top:8px}
+  .warn b{color:var(--amber)}
+  .must{background:var(--seal-bg);border-left:3px solid var(--seal);padding:8px 12px;border-radius:0 6px 6px 0;font-size:13px;margin-top:8px}
+  .regsel{width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;font-size:14px;background:#fff;color:var(--ink)}
+  .regsel:focus-visible{outline:3px solid var(--seal);outline-offset:1px}
+  .zone{border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:14px;line-height:1.45}
+  .zone .zdet{margin-top:6px;padding-top:6px;border-top:1px dotted rgba(0,0,0,.18)}
+  .znone{background:var(--paper);border:1px dashed var(--line);color:var(--steel)}
+  .zgreen{background:#E8F3EE;border-left:4px solid var(--green)}
+  .zyellow{background:var(--amber-bg);border-left:4px solid var(--amber)}
+  .zred{background:#FBE9E7;border-left:4px solid #C0392B}
+  .zstop{background:#F6E3E5;border:2px solid var(--seal);font-weight:500}
+  .sealstop{border-width:3px;background:radial-gradient(circle at 50% 50%, #fff 45%, var(--seal-bg) 100%)}
+  .reset{margin-top:16px;width:100%;padding:11px;border-radius:8px;border:1.5px solid var(--line);background:#fff;color:var(--steel);font-size:14px;cursor:pointer}
+  .reset:hover{border-color:var(--ink);color:var(--ink)}
+  .reset:focus-visible{outline:3px solid var(--seal);outline-offset:2px}
+  footer{margin-top:28px;font-size:11.5px;color:var(--steel)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">АРМА · отдел продаж · внутренний инструмент</div>
+    <h1>Калькулятор сегментации клиента</h1>
+    <p class="sub">Отвечайте на вопросы по ходу звонка — соберётся сценарий: сегмент, пакет, цены, аргументы, дожим и 3 подходящих кейса со ссылками. Сценарий автоматически проверяется по карте региональных рисков. Ниже — база кейсов с фильтрами.</p>
+  </header>
+
+  <div class="layout">
+    <main>
+      <div id="form"></div>
+
+      <section class="q">
+        <h2><span class="num">★</span>База кейсов — подбор для звонка</h2>
+        <p class="hint">Ищите по названию, сфере или городу — и называйте клиенту конкретный проект со ссылкой. Кейсы с плашкой срока — самые сильные для дожима по скорости.</p>
+        <div class="casebar">
+          <input type="search" id="csearch" placeholder="Поиск: компания, ниша, город…" aria-label="Поиск по кейсам">
+          <select id="csphere" aria-label="Фильтр по сфере"></select>
+          <select id="cregion" aria-label="Фильтр по городу"></select>
+        </div>
+        <div class="count" id="ccount"></div>
+        <div class="caselist" id="clist"></div>
+      </section>
+    </main>
+
+    <aside class="result">
+      <div class="card" id="out"></div>
+      <button class="reset" id="reset">Сбросить и начать нового клиента</button>
+      <footer>Цены — из действующих КП (июль 2026). Кейсы — из таблицы кейсов; региональные риски — из «Карты региональных рисков» (актуальность карты ведёт руководитель исполнения). Калькулятор рекомендует, решение принимает менеджер. Минимальный пакет — строго по регламенту.</footer>
+    </aside>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* ================= КЕЙСЫ =================
+   поля: n-название, g-группа сферы, c-город, u-slug на arma-jurist.ru, h-зацепка, s-сегменты */
+const BASE="https://arma-jurist.ru/";
+const GROUPS={kids:"Дети и развитие",lang:"Языки",psy:"Психология",prof:"Профессии и бьюти (ПО)",
+  sport:"Спорт и федерации",med:"Медицина",it:"IT и технологии",corp:"Крупный бизнес и промышленность",
+  biz:"Бизнес-обучение и консалтинг",other:"Другие ниши"};
+
+const CASES=[
+ {n:"Сеть «Бэби клуб» (детские центры и сады)",g:"kids",c:"Москва",u:"kompleksnoe-licenzirovanie-seti-bjebi-klub-ot-dokumentov-do-rezultata",h:"сеть, комплекс",s:["c1","c4"]},
+ {n:"ИП Давыдова (развитие детей)",g:"kids",c:"Пенза",u:"kogda-izmenenija-ne-ostanavlivajut-slazhennaja-rabota-radi-rezultata",h:"СЭЗ Москва + лицензия Пенза",s:["c1"]},
+ {n:"Центр «Алые Паруса» (ИП Ударова)",g:"kids",c:"Воронеж",u:"obrazovanie-s-vnimaniem-k-kazhdomu-put-k-licenzii-obrazovatelnogo-centra-alye-parusa",h:"",s:["c1"]},
+ {n:"ЧОУ «Смеем мечтать» (частная школа, среднее обр.)",g:"kids",c:"Набережные Челны",u:"ot-mechty-k-rezultatu-novyj-jetap-dlja-chou-sosh-smeem-mechtat",h:"основное образование",s:["c1"]},
+ {n:"Центр «Розовый слон»",g:"kids",c:"Москва",u:"territorija-detstva-i-razvitija-istorija-licenzirovanija-centra-rozovyj-slon",h:"",s:["c1"]},
+ {n:"«Хочу Учиться» (ИП Сорокина, семейное образование)",g:"kids",c:"Казань",u:"licenzirovanie-kak-tochka-rosta-dlja-centra-semejnogo-obrazovanija-hochu-uchitsja",h:"семейное образование",s:["c1"]},
+ {n:"ГБУ «Московское долголетие»",g:"other",c:"Москва",u:"moskovskoe-dolgoletie-licenzija-kak-shag-k-novym-vozmozhnostjam-obrazovatelnogo-budushhego",h:"госконтракт",s:["c5","c4"]},
+
+ {n:"Студия английского «Говорун»",g:"lang",c:"Курск",u:"ot-idei-k-oficialnomu-statusu-kejs-studii-anglijskogo-govorun",h:"",s:["c1","c2"]},
+ {n:"English Fluent Vibes (школа английского)",g:"lang",c:"Санкт-Петербург",u:"english-fluent-vibes-oficialnyj-start-v-mire-jazykovogo-obrazovanija",h:"",s:["c1","c2"]},
+ {n:"ИП Здыренкова (китайский язык)",g:"lang",c:"Иваново",u:"delaem-znanija-dostupnee-licenzirovanie-obuchenija-kitajskomu-jazyku",h:"",s:["c1","c2"]},
+ {n:"Школа китайского Laoshi",g:"lang",c:"Благовещенск",u:"v-mir-kitajskoj-kultury-oficialno-licenzija-dlja-shkoly-l-o-sh",h:"",s:["c1","c2"]},
+ {n:"«Дневник китаиста»",g:"lang",c:"Томск",u:"pogruzhenie-v-kitaj-put-k-licenzii-obrazovatelnogo-proekta-dnevnik-kitaista",h:"",s:["c2"]},
+ {n:"Русско-японский учебный центр",g:"lang",c:"Москва",u:"most-mezhdu-kulturami-licenzirovanie-russko-japonskogo-obrazovatelnogo-proekta",h:"",s:["c2"]},
+ {n:"ИП Ген (курсы персидского)",g:"lang",c:"Санкт-Петербург",u:"unikalnyj-start-licenzirovanie-kursov-persidskogo-jazyka-s-podderzhkoj-arma-za-5-dnej",h:"за 5 дней",s:["c1","c2"]},
+ {n:"Языковой центр ABC Family",g:"lang",c:"Москва",u:"obrazovatelnaja-licenzija-realizovannyj-kejs-jazykovogo-centra-abc-family-pod-kljuch",h:"под ключ",s:["c1","c2"]},
+ {n:"Центр английского языка SMART",g:"lang",c:"Москва",u:"smart-put-k-licenzii-kompleksnoe-soprovozhdenie-obrazovatelnogo-centra",h:"очный, СЭЗ",s:["c1","c2"]},
+
+ {n:"МУПИП — Международный университет психологии",g:"psy",c:"Москва",u:"obrazovanie-budushhego-segodnja-licenzirovanie-mezhdunarodnogo-universiteta-psihologii-i-psihoterapii",h:"",s:["c2"]},
+ {n:"АНО ДПО «Академия инноваций и фунд. наук»",g:"psy",c:"Саратов",u:"rekordnoe-licenzirovanie-za-1-den",h:"за 1 день",s:["c2"]},
+ {n:"МПЛ 12 — Московская психологическая лаборатория",g:"psy",c:"Москва",u:"otkryvaja-dveri-v-professiju-psihologa-licenzirovanie-uchebnogo-centra-mpl12",h:"",s:["c2"]},
+ {n:"«Личность в бизнесе» (бизнес-психология)",g:"psy",c:"Москва",u:"ot-idei-do-licenzii-kejs-kompanii-lichnost-v-biznese",h:"",s:["c2"]},
+ {n:"«Отношенческий дом»",g:"psy",c:"Москва",u:"psihologija-obrazovanie-rezultat-licenzija-za-2-mesjaca",h:"за 2 месяца",s:["c2"]},
+ {n:"ИП Филатов (профайлинг)",g:"psy",c:"Москва",u:"shag-za-shagom-k-licenzii-uspeshnyj-kejs-v-sfere-profajlinga-za-5-dnej",h:"за 5 дней",s:["c2"]},
+ {n:"ИП Карпов (психология)",g:"psy",c:"Москва",u:"bystro-i-nadezhno-poluchenie-obrazovatelnoj-licenzii-za-6-dnej",h:"за 6 дней",s:["c2"]},
+ {n:"Банная школа Татьяны Козловой",g:"psy",c:"Крым",u:"shag-k-novym-vozmozhnostjam-poluchenie-obrazovatelnoj-licenzii-bannoj-shkoloj-tatjany-kozlovoj",h:"регион",s:["c2"]},
+
+ {n:"«Подофокус» — школа подологии",g:"prof",c:"Москва",u:"pod-kljuch-kak-my-otkryli-obrazovatelnye-dveri-dlja-ooo-podofokus",h:"",s:["c3"]},
+ {n:"«МИА» — парикмахерская школа",g:"prof",c:"Москва",u:"kak-otkryt-obrazovatelnyj-centr-s-nulja-srazu-v-3-napravlenijah",h:"с нуля, 3 направления",s:["c3"]},
+ {n:"ИП Рыжкова (бьюти, профобучение)",g:"prof",c:"Пермский край",u:"borba-s-prepjatstvijami-i-uspeshnoe-poluchenie-licenzii-na-professionalnoe-obuchenie",h:"ПО",s:["c3"]},
+ {n:"«Академия здоровых ногтей» (ИП Саакян)",g:"prof",c:"Новосибирск",u:"kompleksnoe-licenzirovanie-obrazovatelnoj-dejatelnosti-kejs-akademija-zdorovyh-nogtej",h:"комплекс",s:["c3"]},
+ {n:"«Алтай Пож Сервис» (пожарная безопасность)",g:"prof",c:"Алтайский край",u:"uspeshnoe-otkrytie-altajskogo-kraja-i-poluchenie-licenzii-na-ochnoe-obuchenie-vsego-za-2-5-mesjaca",h:"очное за 2,5 мес",s:["c3"]},
+ {n:"«Эксперт Строй Плюс» (аккредитация охраны труда)",g:"prof",c:"Москва",u:"akkreditacija-pod-kljuch-kejs-ooo-jekspert-stroj-pljus",h:"аккредитация",s:["c3","c4"]},
+ {n:"Автошкола «Ратата»",g:"prof",c:"Москва",u:"na-polnom-hodu-k-licenzii-licenzirovanie-avtoshkoly-ooo-ratata",h:"автошкола",s:["c3"]},
+ {n:"ИП Семьянова (химчистка мебели — обучение)",g:"prof",c:"Москва",u:"novye-vozmozhnosti-obrazovanija-istorija-poluchenija-licenzii-po-napravleniju-himchistki-mebeli",h:"узкая ниша",s:["c3"]},
+ {n:"Школа флористики «Цветомания»",g:"prof",c:"Санкт-Петербург",u:"cvetomanija-put-k-obrazovatelnoj-licenzii-dlja-shkoly-floristiki-iz-sankt-peterburga",h:"",s:["c3","c2"]},
+
+ {n:"Федерация дзюдо России",g:"sport",c:"Москва",u:"federacija-dzjudo-rossii-put-k-licenzii-i-novym-sportivnym-vershinam",h:"",s:["c5"]},
+ {n:"Федерация горнолыжного спорта",g:"sport",c:"Москва",u:"licenzija-kak-obrazovatelnyj-tramplin-dlja-rossijskoj-federacii-gornolyzhnogo-sporta",h:"",s:["c5"]},
+ {n:"Российская федерация баскетбола",g:"sport",c:"Москва",u:"pobeda-na-novom-pole-licenzirovanie-rossijskoj-federacii-basketbola",h:"",s:["c5"]},
+ {n:"Федерация скалолазания России",g:"sport",c:"Москва",u:"k-vershinam-oficialno-licenzirovanie-obrazovatelnogo-napravlenija-federacii-skalolazanija-rossii",h:"",s:["c5"]},
+ {n:"Федерация падел России",g:"sport",c:"Москва",u:"v-igre-polnyj-cikl-poluchenija-obrazovatelnoj-licenzii-dlja-federacii-padel-rossii",h:"полный цикл",s:["c5"]},
+ {n:"«Чкалов Арена»",g:"sport",c:"Москва",u:"chkalov-arena-rasshirjaja-granicy-vozmozhnostej",h:"",s:["c5","c4"]},
+ {n:"Фехтовальный клуб «Лидер»",g:"sport",c:"Москва",u:"komanda-arma-i-klub-lider-put-k-obrazovatelnoj-licenzii",h:"",s:["c5","c1"]},
+
+ {n:"АО «Семейный доктор»",g:"med",c:"Москва",u:"licenzija-na-uspeh-kejs-ao-semejnyj-doktor",h:"",s:["c4"]},
+ {n:"Клиника «Омега» (пластическая хирургия)",g:"med",c:"Москва",u:"licenzirovanie-kak-shag-k-razvitiju-medicinskih-kompetencij-kejs-uchebnogo-centra-ooo-omega",h:"",s:["c4"]},
+ {n:"АНО ДПО «МТИС»",g:"med",c:"Москва",u:"licenzija-dlja-ano-dpo-mtis-menshe-mesjaca-ot-starta-do-rezultata",h:"меньше месяца",s:["c4","c2"]},
+ {n:"Проект «Спасай жизни»",g:"med",c:"Москва",u:"ot-missii-k-licenzii-put-proekta-spasaj-zhizni",h:"",s:["c2","c5"]},
+ {n:"ЦМГ «Консилиум»",g:"med",c:"Москва",u:"razvitie-cherez-obrazovanie-istorija-poluchenija-licenzii-cmg-konsilium",h:"",s:["c4","c2"]},
+
+ {n:"«Код безопасности»",g:"it",c:"Москва",u:"kompleksnoe-licenzirovanie-opyt-kompanii-kod-bezopasnosti",h:"комплекс",s:["c4"]},
+ {n:"ООО «Хард Скилл» (IT-образование)",g:"it",c:"Москва",u:"put-k-uspehu-v-it-obrazovanii-ot-registracii-novogo-ooo-do-licenzii-za-mesjac",h:"новое ООО → лицензия за месяц",s:["c2","c4"]},
+ {n:"АНО ДПО «Центр ИКТ Компетенции»",g:"it",c:"Москва",u:"cifrovaja-bezopasnost-licenzija-za-8-rabochih-dnej",h:"за 8 раб. дней",s:["c2","c4"]},
+ {n:"ИП Курилов (AI-курсы)",g:"it",c:"Московская область",u:"uspet-za-4-dnja-licenzirovanie-ai-kursov-s-nulja",h:"за 4 дня, с нуля",s:["c2"]},
+ {n:"«Икс Ред Групп» (беспилотники)",g:"it",c:"Московская область",u:"licenzija-za-3-mesjaca-v-sfere-bespilotnyh-tehnologij-opyt-ooo-iks-red-grupp",h:"очная за 3 мес",s:["c4"]},
+ {n:"НПО «Тактик» (FPV-индустрия)",g:"it",c:"Москва",u:"licenzija-dlja-fpv-industrii-soprovozhdenie-ooo-npo-taktik",h:"",s:["c4"]},
+ {n:"ИП Никонов (обучение пилотированию БПЛА)",g:"it",c:"Москва",u:"vzljot-s-arma-licenzirovanie-obuchenija-v-sfere-bpla-za-tri-mesjaca",h:"за 3 мес",s:["c2","c3"]},
+
+ {n:"X5 Group — «Агро Авто»",g:"corp",c:"Москва",u:"obrazovatelnyj-marshrut-x5-licenzija-i-akkreditacija-dlja-ooo-agro-avto",h:"лицензия + аккредитация",s:["c4"]},
+ {n:"ДОМ.РФ",g:"corp",c:"Москва",u:"licenzija-dlja-dom-rf-kljuch-k-razvitiju-obrazovatelnogo-prostranstva",h:"",s:["c4"]},
+ {n:"«Газпром Добыча Надым»",g:"corp",c:"Москва",u:"ooo-gazprom-dobycha-nadym-rasshirenie-obrazovatelnyh-gorizontov",h:"",s:["c4"]},
+ {n:"ЧУ ДПО «Газпром ОНУТЦ»",g:"corp",c:"Калининград",u:"marshrut-k-uspehu-pereoformlenie-licenzii-shag-za-shagom-dlja-chu-dpo-gazprom-onutc",h:"переоформление",s:["c4"]},
+ {n:"«Комитас» (роботизация складов)",g:"corp",c:"Москва",u:"licenzija-za-3-mesjaca-dlja-vyhoda-na-novyj-uroven-v-obrazovanii",h:"за 3 мес",s:["c4"]},
+ {n:"«Крошка Картошка»",g:"corp",c:"Москва",u:"obrazovatelnyj-put-lidera-fast-fuda-kejs-ooo-kroshka-kartoshka",h:"",s:["c4"]},
+ {n:"АО «Промфинстрой»",g:"corp",c:"Москва",u:"vozvedenie-obrazovatelnyh-standartov-poluchenie-licenzii-dlja-ao-promfinstroj",h:"",s:["c4"]},
+ {n:"НПО «Молния» (авиакосмос)",g:"corp",c:"Москва",u:"obrazovatelnaja-licenzija-dlja-predprijatija-aviakosmicheskoj-otrasli-kejs-ao-npo-molnija",h:"",s:["c4"]},
+ {n:"Космическая компания «Ной»",g:"corp",c:"Москва",u:"obrazovanie-kak-novaja-orbita-licenzirovanie-kosmicheskoj-kompanii-noj",h:"",s:["c4"]},
+ {n:"«Синтек» (инжиниринг)",g:"corp",c:"Нижний Новгород",u:"ot-promyshlennoj-jekspertizy-k-licenzii-sistemnyj-put-kompanii-sintek",h:"",s:["c4"]},
+ {n:"«БТК Групп» (лёгкая промышленность)",g:"corp",c:"Санкт-Петербург",u:"nadjozhnost-v-detaljah-pereoformlenie-obrazovatelnoj-licenzii-dlja-btk-grupp",h:"переоформление",s:["c4"]},
+ {n:"ФГУП «ВНИИХСЗР» (химия)",g:"corp",c:"Москва",u:"fgup-vniihszr-put-k-licenzii-bez-barerov",h:"ФГУП",s:["c4"]},
+ {n:"«Нетология» (СЭЗ, новые места обучения)",g:"corp",c:"Москва",u:"sjez-dlja-netologii-otkrytie-novyh-mest-obuchenija-v-moskve",h:"СЭЗ",s:["c4","c2"]},
+ {n:"«ПроМакс» (роботизация производства)",g:"corp",c:"Тольятти",u:"ot-promyshlennoj-robotizacii-k-obrazovatelnoj-dejatelnosti-kejs-kompanii-promaks",h:"роботизация",s:["c4"]},
+
+ {n:"Кадровое агентство Cornerstone",g:"biz",c:"Москва",u:"licenzija-za-dva-mesjaca-kak-kadrovoe-agentstvo-cornerstone-vyshlo-v-obrazovatelnuju-sferu",h:"за 2 мес",s:["c4","c2"]},
+ {n:"Агентство «Промоэйдж» (PR/SMM)",g:"biz",c:"Москва",u:"kommunikacionnoe-agentstvo-promojejdzh-zapusk-obrazovatelnogo-napravlenija-i-poluchenie-licenzii",h:"запуск направления",s:["c4","c2"]},
+ {n:"«БайСео» (обучение переговорам)",g:"biz",c:"Москва",u:"puteshestvie-k-licenzii-kejs-kompanii-bajseo",h:"",s:["c2"]},
+ {n:"Global People Solutions",g:"biz",c:"Москва",u:"licenzija-dlja-global-people-solutions",h:"",s:["c2","c4"]},
+ {n:"ИП Коровякова (бизнес-обучение)",g:"biz",c:"Ставропольский край",u:"shag-navstrechu-razvitiju-licenzija-za-3-nedeli-dlja-vostrebovannyh-sfer-v-biznese",h:"за 3 недели",s:["c2"]},
+ {n:"ИП Павлова (ораторское мастерство)",g:"biz",c:"Мурманская область",u:"ot-slov-k-delu-kak-my-pomogli-oformit-licenziju-na-obuchenie-oratorskogo-masterstva-v-murmanskoj-oblasti",h:"",s:["c2"]},
+ {n:"«Эксперт Бизнес-Решения» (информационно-аналитическая)",g:"biz",c:"Москва",u:"novyj-jetap-razvitija-kak-jekspert-biznes-reshenija-poluchil-obrazovatelnuju-licenziju",h:"",s:["c2","c4"]},
+
+ {n:"Фонд «СПК» (антикоррупция)",g:"other",c:"Москва",u:"obrazovanie-protiv-korrupcii-licenzija-za-14-dnej",h:"за 14 дней",s:["c5"]},
+ {n:"«Со-Действие» — православный институт",g:"other",c:"Москва",u:"kak-poluchit-licenziju-dlja-obrazovatelnogo-uchrezhdenija-pri-religioznoj-organizacii",h:"при религиозной организации",s:["c5"]},
+ {n:"Гильдия пианистов-концертмейстеров",g:"other",c:"Москва",u:"v-ritme-masterstva-put-gildii-pianistov-koncertmejsterov-k-novoj-obrazovatelnoj-vysote",h:"",s:["c5","c2"]},
+ {n:"ИП Кобрина (феншуй, Карелия)",g:"other",c:"Карелия",u:"licenzirovanie-v-karelii-ot-zajavki-do-rezultata",h:"регион",s:["c2"]}
+];
+
+/* ================= ВОПРОСЫ ================= */
+const QUESTIONS=[
+ {id:"seg",num:1,title:"Кого будет обучать клиент?",
+  hint:"«Расскажите коротко о вашей деятельности». Рассказывает сам и подробно — вовлечён; односложно и сразу про цену — отметьте флаг ниже.",
+  opts:[["c1","Детей — репетиторы, языковые, детские центры"],["c2","Взрослых навыкам — онлайн-школа, психологи, ДПО"],
+        ["c3","Рабочим профессиям — ПО, бьюти, охрана труда"],["c4","Компания открывает образовательное направление"],
+        ["c5","НКО — АНО, фонд, федерация, ЧОУ"]]},
+ {id:"stage",num:2,title:"Уже работают или только начинают?",
+  hint:"Главный предиктор пакета: новички берут «Полную упаковку», опытные — «Под ключ».",
+  opts:[["new","Только начинают («мы решили открыть…»)"],["exp","Уже работают, опытные («всё знаем»)"]]},
+ {id:"docs",num:3,title:"Какие документы будут выдавать ученикам?",
+  hint:"Определяет, нужен ли ФИС ФРДО. Для ИП с детьми — контрольный вопрос: «Планируете принимать маткапитал?»",
+  opts:[["frdo","Удостоверения / дипломы / свидетельства (ДПО, ПО)"],["nofrdo","Сертификаты или без документов (ДО)"],["dk","Пока не определились"]]},
+ {id:"form",num:4,title:"Формат обучения?",
+  hint:"При очном сразу запускайте чек-лист помещения (10 вопросов).",
+  opts:[["dist","Дистанционное"],["ochka","Очное"]]},
+ {id:"goal",num:5,title:"Зачем и как срочно нужна лицензия?",
+  hint:"«Почему именно сейчас?» — вскрывает тендер, аренду, сезон.",
+  opts:[["urgent","Работать по ней, срочно (тендер, сентябрь, дата)"],["work","Работать по ней, сроки гибкие"],
+        ["formal","«Для галочки» — тендер, аренда, «чтобы была»"]]},
+ {id:"lpr",num:6,title:"Кто принимает решение?",
+  hint:"Мягко: «По каким критериям будете выбирать компанию?»",
+  opts:[["lpr","Сам собеседник — собственник, ИП (ЛПР)"],["nolpr","Согласует с кем-то — ассистент, «собираю КП»"]]}
+];
+
+const FLAGS=[["avito","Клиент пришёл с Авито"],
+ ["econ","Признаки экономщика: сразу про цену, бюджет до ~70–90 тыс., «у других дешевле»"],
+ ["refused","Раньше уже был отказ в лицензии (у нас или у других)"],
+ ["partial","Просит доделать частичную работу (чужой СЭЗ, «только подать»)"]];
+
+const PRICES={
+ dist:{pk:[98000,88000],pu:[165500,129000],vip:[220000,179000],kp:"КП_АРМА_дистант.pdf"},
+ dist_frdo:{pk:[98000,88000],pu:[165500,139000],vip:[220000,193000],kp:"КП_АРМА_дистант с ФРДО.pdf"},
+ ochka:{pk:[150000,132000],pu:[200000,176000],vip:[255000,224000],kp:"КП АРМА_очное.pdf"},
+ ochka_frdo:{pk:[150000,132000],pu:[230000,189000],vip:[295000,249000],kp:"КП АРМА_очное ФРДО.pdf"}};
+
+/* ============ КАРТА РЕГИОНАЛЬНЫХ РИСКОВ ============
+   Источник: «Карта региональных рисков образовательного лицензирования» (.xlsm).
+   form: dist | ochka | both;  vid: all | dpo | po | doop */
+const RISKMAP=[
+ {reg:"Москва",form:"both",vid:"all",zone:"green",lim:"Наиболее удобное и быстрое лицензирование",ask:"Стандартный чек-лист",dec:"Продать в стандартном порядке",appr:"Нет"},
+ {reg:"Московская область",form:"dist",vid:"doop",zone:"yellow",lim:"Для программ ДООП — только обучение, не связанное с профессией; платформа Coreapp.ai не подходит, необходим договор на использование платформы",ask:"Программы ДООП подаём наши (обучение языку)",dec:null,appr:null},
+ {reg:"Ростовская область",form:"dist",vid:"all",zone:"stop",lim:"Дистанционное лицензирование фактически невозможно",ask:"Возможность очной формы",dec:"Предложить очную форму или иную модель",appr:"Обязательно"},
+ {reg:"Ростовская область",form:"ochka",vid:"all",zone:"yellow",lim:"Нюансы оценки объекта",ask:"Помещение и порядок оценки",dec:"Продать после проверки объекта",appr:"При сомнении"},
+ {reg:"Республика Дагестан",form:"dist",vid:"all",zone:"stop",lim:"Дистанционное лицензирование фактически невозможно",ask:"Возможность очной формы",dec:"Предложить очную форму",appr:"Обязательно"},
+ {reg:"Республика Дагестан",form:"ochka",vid:"all",zone:"yellow",lim:"Продажа возможна",ask:"Объект и условия оценки",dec:"Продать после проверки условий",appr:"При сомнении"},
+ {reg:"Краснодарский край",form:"dist",vid:"dpo",zone:"red",lim:"Многочисленные отказы; требуется прокторинг",ask:"Прокторинг и готовность к увеличенному сроку",dec:"Предупредить и продать с фиксацией риска",appr:"При сомнении"},
+ {reg:"Краснодарский край",form:"dist",vid:"po",zone:"stop",lim:"По практике получить невозможно (профобучение дистанционно)",ask:"Возможность очной формы",dec:"Не продавать дистанционный вариант",appr:"Обязательно"},
+ {reg:"Республика Башкортостан",form:"dist",vid:"dpo",zone:"red",lim:"Сложное прохождение; требуется прокторинг",ask:"Прокторинг и техническая модель",dec:"Предупредить и продать с фиксацией риска",appr:"При сомнении"},
+ {reg:"Республика Башкортостан",form:"dist",vid:"po",zone:"stop",lim:"По практике получить невозможно (профобучение дистанционно)",ask:"Возможность очной формы",dec:"Не продавать дистанционный вариант",appr:"Обязательно"},
+ {reg:"Липецкая область",form:"both",vid:"all",zone:"red",lim:"Руководителю клиента необходимо лично пройти собеседование",ask:"Готовность руководителя участвовать лично",dec:"Предупредить и проверить готовность",appr:"При сомнении"},
+ {reg:"Пермский край",form:"both",vid:"all",zone:"red",lim:"Получение через множество отказов",ask:"Готовность к увеличенному сроку",dec:"Предупредить о сроке и повторных подачах",appr:"При сомнении"},
+ {reg:"Курская область",form:"both",vid:"dpo",zone:"yellow",lim:"Требуются две программы: ПК и ПП",ask:"Наличие двух программ",dec:"Продать после подтверждения программ",appr:"Нет"},
+ {reg:"Архангельская область",form:"dist",vid:"all",zone:"yellow",lim:"Расширенный пакет документов: договор с интернет-провайдером по адресу места деятельности, чеки на приобретённое оборудование (ноутбук/компьютер, мышь и т.д.)",ask:"Наличие документов или возможность их получения",dec:"Продать после подтверждения готовности предоставить расширенный пакет",appr:"Нет"},
+ {reg:"Республика Коми",form:"dist",vid:"all",zone:"yellow",lim:"Идёт тяжело (по предварительной оценке; строка карты заполнена не полностью)",ask:"Уточнить детали у руководителя исполнения",dec:null,appr:"При сомнении"}
+];
+
+/* Алгоритм МОП по зонам (лист «Алгоритм МОП») */
+const ZONES={
+ green:{label:"Зелёная зона",cls:"zgreen",sell:"Продажа в стандартном порядке",forbid:"гарантию результата с первой подачи",appr:"Согласование не требуется"},
+ yellow:{label:"Жёлтая зона",cls:"zyellow",sell:"Продавать можно после проверки условий: сообщить специальные требования, зафиксировать предупреждение",forbid:"отсутствие дополнительных требований",appr:"Согласование — при сомнении"},
+ red:{label:"Красная зона",cls:"zred",sell:"Продавать можно с предупреждением об увеличенном сроке и возможных повторных подачах; предложить альтернативы",forbid:"стандартный срок и отсутствие отказов",appr:"Согласование при сомнении — ответ руководителя в течение 1 часа"},
+ stop:{label:"СТОП-регион",cls:"zstop",sell:"Эту комбинацию НЕ продавать. Предложить очную форму, иной вид образования или другую допустимую модель",forbid:"возможность стоп-комбинации",appr:"Согласование с руководителем ОБЯЗАТЕЛЬНО"}
+};
+
+const RISKREGIONS=[...new Set(RISKMAP.map(r=>r.reg))];
+const ALLREGIONS=["Москва","Московская область","Санкт-Петербург",
+ ...RISKREGIONS.filter(r=>!["Москва","Московская область"].includes(r)).sort((a,b)=>a.localeCompare(b,"ru")),
+ "Другой регион РФ (нет в карте)"];
+
+function regionSuffix(reg){
+  const hits=RISKMAP.filter(r=>r.reg===reg);
+  if(!hits.length) return "";
+  const order={stop:3,red:2,yellow:1,green:0};
+  const worst=hits.sort((a,b)=>order[b.zone]-order[a.zone])[0].zone;
+  return worst==="stop"?" — есть СТОП-комбинации":worst==="red"?" — красная зона":worst==="yellow"?" — жёлтая зона":" — зелёная зона";
+}
+
+const SEGMETA={
+ c1:{name:"С1 · Детское образование",desc:"ИП и небольшие центры, обучающие детей",
+     args:["Маткапитал и налоговый вычет 13% — прямая выгода для их клиентов","«Мы не теряемся — после лицензии пишите и звоните в любое время»","Легальность: работа с детьми под особым контролем"],
+     close:"Сезон: «успеем к сентябрю» (июль–август) / «лицензия до Нового года» (октябрь)"},
+ c2:{name:"С2 · Навыки взрослых (ДО/ДПО)",desc:"Онлайн-школы, психологи, инфобизнес",
+     args:["Чистое исполнение без переделок — часто переделываем за дешёвыми исполнителями","Скорость: дистант от 15 дней","Честность: если лицензия не нужна — скажем прямо"],
+     close:"Фиксация цены месяца, мягкий вход — первый платёж 10 000 ₽"},
+ c3:{name:"С3 · Рабочие профессии (ПО)",desc:"Профобучение, бьюти, охрана труда",
+     args:["Отвечаем на страхи: «что показывать при проверке?» — сопровождаем и учим","Соцконтракт доступен ученикам (только ПО)","Свидетельства о профессии + ФРДО — полный комплект"],
+     close:"«Мы вас не бросаем после лицензии» — полгода на связи"},
+ c4:{name:"С4 · Корпорат",desc:"Действующая компания открывает образовательное направление",
+     args:["Комплексность: программы, ЛНА под клиента, ФРДО, персональные данные","Гарантия юридической ответственности 12 месяцев — штрафы компенсируем","Прошли проверки служб безопасности крупных клиентов"],
+     close:"Прямое предложение + фиксация сроков в договоре"},
+ c5:{name:"С5 · НКО",desc:"АНО, фонды, федерации, ЧОУ",
+     args:["Экономичный вход: поэтапная оплата","Опыт работы со спецификой НКО, включая спортивные федерации","Прозрачный договор — удобно для отчётности"],
+     close:"Поэтапная оплата как «мягкий вход»"}};
+
+const UNIVERSAL="«Мы не просто получаем лицензию — мы учим по ней работать»";
+
+/* ================= состояние ================= */
+let state={flags:{}};
+
+/* ================= рендер вопросов ================= */
+const form=document.getElementById("form");
+QUESTIONS.forEach(q=>{
+  const d=document.createElement("section");d.className="q";
+  d.innerHTML=`<h2><span class="num">${q.num}.</span>${q.title}</h2><p class="hint">${q.hint}</p>`;
+  const c=document.createElement("div");c.className="chips";c.setAttribute("role","group");
+  q.opts.forEach(([val,label])=>{
+    const b=document.createElement("button");
+    b.type="button";b.className="chip";b.textContent=label;
+    b.setAttribute("aria-pressed","false");b.dataset.v=val;
+    b.addEventListener("click",()=>{
+      state[q.id]=state[q.id]===val?undefined:val;
+      c.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",String(x.dataset.v===state[q.id])));
+      if(q.id==="seg") syncSphereToSeg();
+      render();renderCases();
+    });
+    c.appendChild(b);
+  });
+  d.appendChild(c);form.appendChild(d);
+});
+
+/* Вопрос 7: регион */
+const rq=document.createElement("section");rq.className="q";
+rq.innerHTML=`<h2><span class="num">7.</span>Регион лицензирования</h2><p class="hint">Для дистанта регион определяется по месту регистрации юрлица/ИП клиента — лицензию выдаёт орган именно этого субъекта. Сценарий проверится по карте региональных рисков.</p>`;
+const rsel=document.createElement("select");rsel.className="regsel";rsel.setAttribute("aria-label","Регион лицензирования");
+rsel.innerHTML=`<option value="">— выберите регион —</option>`+ALLREGIONS.map(r=>`<option value="${r}">${r}${regionSuffix(r)}</option>`).join("");
+rsel.addEventListener("change",()=>{state.region=rsel.value||undefined;render();renderCases();});
+rq.appendChild(rsel);form.appendChild(rq);
+
+const fq=document.createElement("section");fq.className="q";
+fq.innerHTML=`<h2><span class="num">＋</span>Отметьте, если применимо</h2><p class="hint">Флаги меняют сценарий: Авито и экономщик включают регламент минимального пакета.</p>`;
+const checks=document.createElement("div");checks.className="checks";
+FLAGS.forEach(([val,label])=>{
+  const l=document.createElement("label");
+  const i=document.createElement("input");i.type="checkbox";
+  i.addEventListener("change",()=>{state.flags[val]=i.checked;render();renderCases();});
+  l.appendChild(i);l.appendChild(document.createTextNode(label));
+  checks.appendChild(l);
+});
+fq.appendChild(checks);form.appendChild(fq);
+
+document.getElementById("reset").addEventListener("click",()=>{
+  state={flags:{}};
+  document.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed","false"));
+  document.querySelectorAll(".checks input").forEach(x=>x.checked=false);
+  document.getElementById("csearch").value="";
+  document.getElementById("csphere").value="";
+  document.getElementById("cregion").value="";
+  render();renderCases();window.scrollTo({top:0});
+});
+
+/* ================= кейсы: фильтры ================= */
+const elSearch=document.getElementById("csearch"),
+      elSphere=document.getElementById("csphere"),
+      elRegion=document.getElementById("cregion"),
+      elList=document.getElementById("clist"),
+      elCount=document.getElementById("ccount");
+
+elSphere.innerHTML=`<option value="">Все сферы</option>`+
+  Object.entries(GROUPS).map(([k,v])=>`<option value="${k}">${v}</option>`).join("");
+const regions=[...new Set(CASES.map(c=>c.c))].sort((a,b)=>a.localeCompare(b,"ru"));
+elRegion.innerHTML=`<option value="">Все города</option>`+regions.map(r=>`<option>${r}</option>`).join("");
+[elSearch,elSphere,elRegion].forEach(e=>e.addEventListener("input",renderCases));
+
+function syncSphereToSeg(){
+  const map={c1:"kids",c2:"psy",c3:"prof",c4:"corp",c5:"sport"};
+  elSphere.value=state.seg?map[state.seg]:"";
+}
+
+function caseHTML(k){
+  return `<div class="case"><span class="nm">${k.n}</span>${k.h?`<span class="hook">${k.h}</span>`:""}
+    <div class="meta">${GROUPS[k.g]} · ${k.c}</div>
+    <a href="${BASE}${k.u}" target="_blank" rel="noopener">Открыть кейс ↗</a></div>`;
+}
+
+function renderCases(){
+  const q=elSearch.value.trim().toLowerCase(),g=elSphere.value,r=elRegion.value;
+  const res=CASES.filter(k=>
+    (!g||k.g===g)&&(!r||k.c===r)&&
+    (!q||(k.n+" "+GROUPS[k.g]+" "+k.c+" "+k.h).toLowerCase().includes(q)));
+  elCount.textContent=`Найдено кейсов: ${res.length} из ${CASES.length}`;
+  elList.innerHTML=res.length?res.map(caseHTML).join(""):`<div class="case">Ничего не найдено — попробуйте убрать фильтры.</div>`;
+}
+
+/* подбор топ-3 кейсов под сегмент для карточки сценария */
+function isMskRegion(){return ["Москва","Московская область"].includes(state.region||"");}
+
+function computeRisk(){
+  const reg=state.region,fm=state.form;
+  if(!reg||!fm) return null;
+  if(reg==="Другой регион РФ (нет в карте)") return {none:true};
+  const vid=state.seg==="c3"?"po":(state.docs==="frdo"?"dpo":state.docs==="nofrdo"?"doop":"any");
+  const hits=RISKMAP.filter(r=>r.reg===reg&&(r.form==="both"||r.form===fm)&&(r.vid==="all"||vid==="any"||r.vid===vid));
+  if(!hits.length) return {none:true};
+  const order={stop:3,red:2,yellow:1,green:0};
+  hits.sort((a,b)=>order[b.zone]-order[a.zone]);
+  return {hits,worst:hits[0]};
+}
+
+function pickCases(seg){
+  if(!seg) return [];
+  let pool=CASES.filter(k=>k.s.includes(seg));
+  const wantRegional=!isMskRegion(); // для регионов подмешиваем региональные кейсы
+  pool.sort((a,b)=>{
+    const ha=a.h?1:0, hb=b.h?1:0;                 // кейсы со сроком сильнее
+    const ra=(a.c!=="Москва"&&wantRegional)?0.5:0, rb=(b.c!=="Москва"&&wantRegional)?0.5:0;
+    return (hb+rb)-(ha+ra);
+  });
+  return pool.slice(0,3);
+}
+
+/* ================= логика сценария ================= */
+function fmt(n){return n.toLocaleString("ru-RU")+" ₽"}
+
+function compute(){
+  const {seg,stage,docs,form:fm,goal,lpr}=state,f=state.flags;
+  if(!seg||!stage||!fm) return null;
+  let frdo=docs==="frdo"?true:docs==="nofrdo"?false:(seg==="c3");
+  const frdoNote=docs==="dk"?(seg==="c3"
+    ?"Документы не определены: для ПО почти всегда нужны свидетельства → взято КП с ФРДО, уточните."
+    :"Документы не определены: взято КП без ФРДО. Уточните — при удостоверениях/дипломах нужен ФРДО."):null;
+  const key=(fm==="dist"?"dist":"ochka")+(frdo?"_frdo":"");
+  const P=PRICES[key];
+
+  let pkg,why;
+  if(stage==="new"){pkg="pu";why="новичок — «мы вас всему научим»";}
+  else{pkg="pk";why="опытный клиент — базовое сопровождение";}
+  if(seg==="c3"&&pkg==="pk"){pkg="pu";why="сегмент ПО: страхи проверок закрывает только Полная упаковка";}
+  if(seg==="c4"&&pkg==="pk"){pkg="pu";why="корпораты берут комплексные пакеты";}
+  if(seg==="c5"){pkg="pk";why="НКО экономят — Полную упаковку не навязываем";}
+  if(goal==="formal"){pkg="pk";why="лицензия «для галочки» — только Под ключ";}
+  const minimal=f.avito||f.econ;
+
+  const M=SEGMETA[seg];
+  let args=[...M.args];
+  if(f.refused) args.unshift("Был отказ → сразу гарантия: 100% возврат при отказе по нашей вине + юр. ответственность 12 мес.");
+  if(pkg==="pu") args.push("Дожим на Полную упаковку: «Вам останется просто правильно работать — а мы научим как»");
+  args.push("Универсальный: "+UNIVERSAL);
+
+  let warns=[];
+  if(lpr==="nolpr") warns.push("Не-ЛПР: длинный цикл. Дать пакет для согласования (договор, смета, состав тарифа), узнать критерии выбора, касание на следующий день.");
+  if(fm==="ochka"&&state.region&&!isMskRegion()) warns.push("Регионы + очка: самый длинный цикл (СЭЗ, замеры). Не обещать короткие сроки.");
+  if(fm==="ochka") warns.push("В КП не входят замеры и договоры на обслуживающие организации — добавляются отдельно.");
+  if(f.partial) warns.push("Частичная услуга (чужой СЭЗ и т.п.) — источник переделок. Предупредить о рисках, при сомнениях — согласовать с руководителем.");
+  if(seg==="c5") warns.push("Спорт в МО: практика отказов, если не АНО «Спортивная школа» — перед обещаниями сверить с юристом.");
+  if(goal==="work"&&!minimal) warns.push("Правило двух недель: без решения за 14 дней клиент почти не возвращается — назначайте созвон с конкретной датой.");
+  if(frdoNote) warns.push(frdoNote);
+
+  return {M,P,pkg,why,args,warns,minimal,fm};
+}
+
+/* ================= рендер результата ================= */
+const out=document.getElementById("out");
+function render(){
+  const r=compute();
+  if(!r){
+    const need=[["seg","1"],["stage","2"],["form","4"]].filter(([k])=>!state[k]).map(([,n])=>n);
+    out.innerHTML=`<h2>Сценарий продажи</h2>
+      <p class="empty">Отвечайте на вопросы — сценарий соберётся здесь.<br><br>
+      Минимум для расчёта: вопросы <b>${need.join(", ")||"—"}</b> (сегмент, стадия, формат). Остальные уточняют рекомендацию.</p>`;
+    return;
+  }
+  const {M,P,pkg,why,args,warns,minimal}=r;
+  const PKGNAMES={pk:"Под ключ",pu:"Полная упаковка",vip:"VIP"};
+  const [std,promo]=P[pkg];
+  const topCases=pickCases(state.seg);
+  const risk=computeRisk();
+  const isStop=risk&&risk.worst&&risk.worst.zone==="stop";
+
+  let html=`<h2>Сценарий продажи</h2>`;
+
+  /* региональный риск — в самом верху карточки */
+  if(!state.region){
+    html+=`<div class="zone znone">Укажите регион (вопрос 7) — сценарий проверится по карте региональных рисков.</div>`;
+  } else if(risk&&risk.none){
+    html+=`<div class="zone znone"><b>${state.region}:</b> в карте рисков нет данных по этой комбинации — стандартный порядок. При сомнениях — запрос руководителю исполнения.</div>`;
+  } else if(risk&&risk.worst){
+    const Z=ZONES[risk.worst.zone];
+    html+=`<div class="zone ${Z.cls}"><b>${Z.label} · ${state.region}</b><br>${Z.sell}.<br><b>Запрещено обещать:</b> ${Z.forbid}. ${Z.appr}.`;
+    risk.hits.forEach(h=>{
+      html+=`<div class="zdet">— ${h.lim}${h.ask?`<br><i>Уточнить: ${h.ask}</i>`:""}${h.dec?`<br><i>Решение: ${h.dec}</i>`:""}</div>`;
+    });
+    html+=`</div>`;
+  }
+
+  html+=`<div class="sealwrap">
+      <div class="seal${isStop?" sealstop":""}"><span class="in">${isStop?"СТОП: согласовать":(minimal?"Минимальный пакет":PKGNAMES[pkg])}<small>${isStop?"карта рисков":"рекомендация"}</small></span></div>
+      <div><div class="segname">${M.name}</div><div class="segdesc">${M.desc}</div></div>
+    </div>`;
+
+  if(minimal){
+    html+=`<div class="row"><div class="lbl">Цена</div><div class="price"><span class="one">69 000 ₽ фиксированно</span></div></div>
+      <div class="row"><div class="lbl">Отправить КП</div><div class="kp">КП_минимальный_пакет_лицензия.pdf</div></div>
+      <div class="must"><b>По регламенту:</b> ${state.flags.avito?"клиент с Авито — минимальный пакет предлагаем сразу.":"сначала презентовать ценность основных тарифов; минимальный — только когда клиент уходит на цену."} Проговорить границы: «только получение лицензии; ФРДО, ЛНА, ПДн, первый поток — не входят». Зафиксировать в CRM основание (Авито / бюджет / конкурент).</div>`;
+    if(r.fm==="ochka") html+=`<div class="warn"><b>Внимание:</b> минимальный пакет описан под дистант (СДО, сайт). Для очного — согласовать с руководителем.</div>`;
+    html+=`<div class="row" style="margin-top:14px"><div class="lbl">Основной тариф (презентовать сначала)</div>
+      <div class="price"><span class="std">${fmt(std)}</span><span class="promo">${fmt(promo)}</span> · ${PKGNAMES[pkg]}, ${why}</div></div>`;
+  } else {
+    html+=`<div class="row"><div class="lbl">Пакет · ${why}</div>
+      <div class="price"><span class="std">${fmt(std)}</span><span class="promo">${fmt(promo)} по цене месяца</span></div></div>
+      <div class="row"><div class="lbl">Отправить КП</div><div class="kp">${P.kp}</div></div>`;
+    if(r.fm==="dist") html+=`<div class="row"><div class="lbl">Мягкий вход</div><div style="font-size:13.5px">Первый платёж — 10 000 ₽, далее поэтапно</div></div>`;
+  }
+
+  html+=`<div class="row"><div class="lbl">Аргументы</div><ul class="args">${args.map(a=>`<li>${a}</li>`).join("")}</ul></div>`;
+
+  if(topCases.length){
+    html+=`<div class="row"><div class="lbl">Кейсы для звонка</div>${topCases.map(k=>
+      `<div class="rcase"><b>${k.n}${k.h?` <span class="hook">${k.h}</span>`:""}</b>
+       <span class="meta">${GROUPS[k.g]} · ${k.c}</span><br>
+       <a href="${BASE}${k.u}" target="_blank" rel="noopener">Ссылка на кейс ↗</a></div>`).join("")}
+      <div style="font-size:11.5px;color:var(--steel);margin-top:6px">Больше вариантов — в базе кейсов слева (фильтр уже настроен на сегмент).</div></div>`;
+  }
+
+  html+=`<div class="row"><div class="lbl">Дожим</div><div class="close-line">${M.close}</div></div>`;
+  if(warns.length) html+=`<div class="row"><div class="lbl">Обратить внимание</div>${warns.map(w=>`<div class="warn">${w}</div>`).join("")}</div>`;
+  out.innerHTML=html;
+}
+
+render();renderCases();
+</script>
+</body>
+</html>
