@@ -1,0 +1,917 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Калькулятор Росздравнадзора — АРМА</title>
+<style>
+:root{
+  --ground:#eef1f4; --surface:#ffffff; --surface-2:#f6f9fa;
+  --ink:#0f1e28; --ink-2:#42555f; --ink-3:#6d7f89;
+  --line:#d9e0e5; --line-strong:#c2ccd3;
+  --accent:#0e5f6b; --accent-soft:#e1eff1; --accent-ink:#0a4a54; --on-accent:#ffffff;
+  --good:#1c6b45; --good-soft:#e3f1e9;
+  --warn:#8a5406; --warn-soft:#fbeedb;
+  --bad:#a52216;  --bad-soft:#fbe7e4;
+  --shadow:0 1px 2px rgba(15,30,40,.06), 0 8px 24px -16px rgba(15,30,40,.25);
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0b1317; --surface:#131f25; --surface-2:#18262d;
+    --ink:#e8eff2; --ink-2:#a8b9c1; --ink-3:#7e9099;
+    --line:#25353d; --line-strong:#34484f;
+    --accent:#5cc0cc; --accent-soft:#122e33; --accent-ink:#93dee6; --on-accent:#06181c;
+    --good:#5fc08c; --good-soft:#12291f;
+    --warn:#dfa851; --warn-soft:#2b2213;
+    --bad:#e8837a;  --bad-soft:#2d1917;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0b1317; --surface:#131f25; --surface-2:#18262d;
+  --ink:#e8eff2; --ink-2:#a8b9c1; --ink-3:#7e9099;
+  --line:#25353d; --line-strong:#34484f;
+  --accent:#5cc0cc; --accent-soft:#122e33; --accent-ink:#93dee6; --on-accent:#06181c;
+  --good:#5fc08c; --good-soft:#12291f;
+  --warn:#dfa851; --warn-soft:#2b2213;
+  --bad:#e8837a;  --bad-soft:#2d1917;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.8);
+}
+
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{margin:0;padding:0}
+body{
+  background:var(--ground); color:var(--ink);
+  font-family:var(--sans); font-size:15px; line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+button,input{font:inherit; color:inherit}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:4px}
+
+.wrap{max-width:1240px; margin:0 auto; padding:28px 24px 96px}
+
+/* ---------- header ---------- */
+.masthead{
+  display:flex; align-items:flex-end; justify-content:space-between; gap:24px;
+  padding-bottom:18px; margin-bottom:26px; border-bottom:1px solid var(--line-strong);
+}
+.masthead h1{
+  font-family:var(--serif); font-weight:600; font-size:31px; line-height:1.15;
+  letter-spacing:-.01em; margin:0 0 4px; text-wrap:balance;
+}
+.masthead p{margin:0; color:var(--ink-2); font-size:14.5px}
+.org{
+  font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--ink-3); white-space:nowrap; padding-bottom:4px;
+}
+
+/* ---------- layout ---------- */
+.grid{display:grid; grid-template-columns:minmax(0,1fr) 356px; gap:28px; align-items:start}
+.flow{display:flex; flex-direction:column; gap:28px; min-width:0}
+
+/* ---------- step blocks ---------- */
+.step{display:flex; flex-direction:column; gap:14px}
+.step-head{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap}
+.step-num{
+  font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--accent); font-weight:700;
+}
+.step-head h2{margin:0; font-size:17px; font-weight:650; letter-spacing:-.005em}
+.step-hint{margin:0; color:var(--ink-3); font-size:13px}
+
+/* ---------- tariffs ---------- */
+.tariffs{display:grid; grid-template-columns:repeat(3,1fr); gap:12px}
+.tariff{
+  position:relative; text-align:left; cursor:pointer;
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--r);
+  padding:15px 16px 14px; display:flex; flex-direction:column; gap:11px;
+  transition:border-color .12s, box-shadow .12s, background .12s;
+}
+.tariff:hover{border-color:var(--line-strong)}
+.tariff[aria-pressed="true"]{
+  border-color:var(--accent); background:var(--accent-soft); box-shadow:inset 0 0 0 1px var(--accent);
+}
+.tariff-name{font-weight:650; font-size:15px; letter-spacing:-.005em; padding-right:22px; min-height:45px}
+.tariff dl{margin:0; display:flex; flex-direction:column; gap:7px}
+.tariff .row{display:flex; align-items:baseline; justify-content:space-between; gap:10px}
+.tariff dt{font-size:12px; color:var(--ink-3); line-height:1.35}
+.tariff dd{
+  margin:0; font-size:14px; font-weight:600; white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+}
+.tariff .base dd{font-size:19px; letter-spacing:-.01em}
+.tick{
+  position:absolute; top:14px; right:14px; width:16px; height:16px; border-radius:50%;
+  border:1.5px solid var(--line-strong);
+}
+.tariff[aria-pressed="true"] .tick{border-color:var(--accent); background:var(--accent)}
+.tariff[aria-pressed="true"] .tick::after{
+  content:""; position:absolute; inset:0; margin:auto; width:5px; height:5px;
+  border-radius:50%; background:var(--surface);
+}
+
+/* ---------- specialty cards ---------- */
+.cards{display:flex; flex-direction:column; gap:12px}
+.card{
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--r);
+  padding:16px 18px 18px; display:flex; flex-direction:column; gap:14px; box-shadow:var(--shadow);
+}
+.card.has-error{border-color:var(--bad)}
+.card-top{display:flex; align-items:flex-start; gap:14px}
+.card-index{
+  flex:none; width:26px; height:26px; border-radius:6px; margin-top:22px;
+  background:var(--surface-2); border:1px solid var(--line);
+  display:grid; place-items:center; font-size:12px; font-weight:650; color:var(--ink-2);
+  font-variant-numeric:tabular-nums;
+}
+.field{display:flex; flex-direction:column; gap:5px; flex:1; min-width:0}
+.field > label,.legend{
+  font-size:11px; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ink-3); font-weight:650;
+}
+input[type=text]{
+  width:100%; background:var(--surface-2); color:var(--ink);
+  border:1px solid var(--line); border-radius:7px; padding:9px 11px; font-size:15px;
+  transition:border-color .12s, background .12s;
+}
+input[type=text]:focus{background:var(--surface); border-color:var(--accent); outline:none;
+  box-shadow:0 0 0 3px var(--accent-soft)}
+input[type=text]::placeholder{color:var(--ink-3); opacity:.75}
+.btn-remove{
+  flex:none; margin-top:18px; background:none; border:1px solid transparent; border-radius:7px;
+  color:var(--ink-3); font-size:13px; padding:6px 9px; cursor:pointer;
+}
+.btn-remove:hover{color:var(--bad); background:var(--bad-soft); border-color:var(--bad-soft)}
+
+fieldset{border:0; margin:0; padding:0; display:flex; flex-direction:column; gap:8px}
+.checks{display:flex; gap:10px; flex-wrap:wrap}
+.check{
+  display:flex; align-items:center; gap:9px; cursor:pointer; user-select:none;
+  border:1px solid var(--line); border-radius:8px; padding:9px 13px 9px 11px;
+  background:var(--surface-2); font-size:14px; transition:border-color .12s, background .12s;
+}
+.check:hover{border-color:var(--line-strong)}
+.check input{accent-color:var(--accent); width:16px; height:16px; margin:0}
+.check:has(input:checked){border-color:var(--accent); background:var(--accent-soft); color:var(--accent-ink); font-weight:600}
+
+.titles{display:flex; flex-direction:column; gap:10px}
+.title-row{display:grid; grid-template-columns:190px minmax(0,1fr); gap:12px; align-items:center}
+.title-row .tag{font-size:12.5px; color:var(--ink-2); font-weight:600}
+.title-row input{font-size:14px; padding:8px 11px}
+
+.note{
+  display:flex; gap:9px; align-items:flex-start; font-size:13px; line-height:1.45;
+  border-radius:8px; padding:9px 12px;
+}
+.note.info{background:var(--warn-soft); color:var(--warn)}
+.note.error{background:var(--bad-soft); color:var(--bad); font-weight:600}
+.note.plain{background:var(--surface-2); color:var(--ink-2); border:1px solid var(--line)}
+.note .mark{font-weight:700; line-height:1.35}
+
+/* ---------- buttons ---------- */
+.btn{
+  border:1px solid var(--line-strong); background:var(--surface); color:var(--ink);
+  border-radius:8px; padding:10px 16px; font-size:14px; font-weight:600; cursor:pointer;
+  transition:background .12s, border-color .12s, color .12s;
+}
+.btn:hover:not(:disabled){background:var(--surface-2); border-color:var(--ink-3)}
+.btn:disabled{opacity:.45; cursor:not-allowed}
+.btn-primary{background:var(--accent); border-color:var(--accent); color:var(--on-accent)}
+.btn-primary:hover:not(:disabled){background:var(--accent-ink); border-color:var(--accent-ink); color:var(--on-accent)}
+.btn-add{
+  align-self:flex-start; border-style:dashed; color:var(--accent); border-color:var(--accent);
+  background:transparent;
+}
+.btn-add:hover{background:var(--accent-soft)}
+.btn-quiet{border-color:var(--line); color:var(--ink-2); font-weight:500}
+.actions{display:flex; flex-wrap:wrap; gap:10px; align-items:center}
+
+/* ---------- detail table ---------- */
+.table-wrap{
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--r);
+  overflow-x:auto; box-shadow:var(--shadow);
+}
+table{border-collapse:collapse; width:100%; min-width:560px; font-size:14px}
+thead th{
+  text-align:left; font-size:11px; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ink-3); font-weight:650; padding:11px 14px; border-bottom:1px solid var(--line);
+  background:var(--surface-2); white-space:nowrap;
+}
+tbody td{padding:12px 14px; border-bottom:1px solid var(--line); vertical-align:top}
+tbody tr:last-child td{border-bottom:0}
+td.num{width:38px; color:var(--ink-3); font-variant-numeric:tabular-nums}
+td.price{text-align:right; font-weight:650; white-space:nowrap; font-variant-numeric:tabular-nums}
+td.spec{font-weight:600}
+tfoot td{
+  padding:13px 14px; border-top:1px solid var(--line-strong); font-weight:650;
+  background:var(--surface-2);
+}
+tfoot td.price{font-size:16px}
+.strike{color:var(--ink-3); font-weight:400; text-decoration:line-through; margin-right:7px; font-size:13px}
+
+.badge{
+  display:inline-block; font-size:11.5px; font-weight:650; line-height:1.35;
+  padding:3px 8px; border-radius:5px; text-wrap:balance;
+}
+.badge.plain{background:var(--surface-2); color:var(--ink-2); border:1px solid var(--line)}
+.badge.pack{background:var(--good-soft); color:var(--good)}
+.badge.special{background:var(--warn-soft); color:var(--warn)}
+.badge.main{background:var(--accent-soft); color:var(--accent-ink)}
+.kind{color:var(--ink-2); white-space:nowrap}
+.prog-title{display:block; color:var(--ink-3); font-size:12.5px; margin-top:2px}
+
+/* ---------- summary rail ---------- */
+.rail{position:sticky; top:22px; display:flex; flex-direction:column; gap:14px}
+.panel{
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--r);
+  box-shadow:var(--shadow); overflow:hidden;
+}
+.panel-head{
+  padding:13px 18px; border-bottom:1px solid var(--line); background:var(--surface-2);
+  font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:700; color:var(--ink-2);
+}
+.panel-body{padding:16px 18px; display:flex; flex-direction:column; gap:10px}
+.sum-row{display:flex; align-items:baseline; justify-content:space-between; gap:14px; font-size:13.5px}
+.sum-row dt{color:var(--ink-2)}
+.sum-row dd{margin:0; font-weight:650; font-variant-numeric:tabular-nums; text-align:right}
+.sum-row.strong dd{color:var(--ink)}
+.sum-row.discount dd{color:var(--good)}
+.divider{height:1px; background:var(--line); margin:3px 0}
+.total{
+  padding:16px 18px; border-top:1px solid var(--line-strong); background:var(--accent-soft);
+  display:flex; flex-direction:column; gap:2px;
+}
+.total .lbl{font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:700; color:var(--accent-ink)}
+.total .val{
+  font-size:33px; font-weight:700; letter-spacing:-.02em; color:var(--accent-ink);
+  font-variant-numeric:tabular-nums; line-height:1.1;
+}
+.pay{display:flex; flex-direction:column}
+.pay-item{padding:13px 18px; border-bottom:1px solid var(--line)}
+.pay-item:last-child{border-bottom:0}
+.pay-item .lbl{font-size:12.5px; color:var(--ink-2); display:block; margin-bottom:3px}
+.pay-item .val{font-size:21px; font-weight:700; letter-spacing:-.01em; font-variant-numeric:tabular-nums}
+.empty{padding:22px 18px; color:var(--ink-3); font-size:13.5px; text-align:center}
+
+.alert{
+  border-radius:var(--r); padding:14px 16px; font-size:13.5px; line-height:1.5;
+  background:var(--warn-soft); color:var(--warn); border:1px solid transparent;
+}
+.alert strong{display:block; font-size:14.5px; margin-bottom:4px}
+
+/* ---------- toast ---------- */
+.toast{
+  position:fixed; left:50%; bottom:26px; transform:translate(-50%,14px);
+  background:var(--ink); color:var(--ground); padding:11px 20px; border-radius:8px;
+  font-size:14px; font-weight:600; box-shadow:0 12px 32px -12px rgba(0,0,0,.5);
+  opacity:0; pointer-events:none; transition:opacity .18s, transform .18s; z-index:50;
+}
+.toast.show{opacity:1; transform:translate(-50%,0)}
+
+@media (prefers-reduced-motion: reduce){*{transition:none !important; animation:none !important}}
+
+/* ---------- responsive ---------- */
+@media (max-width:1040px){
+  .grid{grid-template-columns:1fr}
+  .rail{position:static}
+  .tariffs{grid-template-columns:1fr}
+  .tariff-name{min-height:0}
+  .tariff{flex-direction:row; align-items:center; justify-content:space-between; gap:18px; padding:14px 44px 14px 16px}
+  .tariff dl{flex-direction:row; gap:22px; align-items:baseline}
+  .tariff .row{flex-direction:column; align-items:flex-end; gap:1px}
+  .tariff dt{text-align:right}
+}
+@media (max-width:640px){
+  .wrap{padding:20px 14px 72px}
+  .masthead{flex-direction:column; align-items:flex-start; gap:6px}
+  .masthead h1{font-size:25px}
+  .card-top{flex-wrap:wrap; align-items:center; gap:10px}
+  .card-index{margin-top:0}
+  .btn-remove{margin-top:0; margin-left:auto}
+  .card-top .field{order:3; flex-basis:100%}
+  .title-row{grid-template-columns:1fr; gap:5px}
+
+  /* Таблица превращается в стопку блоков — без горизонтальной прокрутки */
+  .table-wrap{overflow-x:visible}
+  table{min-width:0}
+  thead{display:none}
+  tbody tr{
+    display:grid; grid-template-columns:minmax(0,1fr) auto; gap:5px 12px;
+    padding:13px 14px; border-bottom:1px solid var(--line);
+  }
+  tbody tr:last-child{border-bottom:0}
+  tbody td{border:0; padding:0}
+  td.num{display:none}
+  td.spec{grid-area:1/1}
+  td.price{grid-area:1/2; text-align:right}
+  td.kind{grid-area:2/1/auto/3}
+  tbody td:nth-child(4){grid-area:3/1/auto/3}
+  tfoot tr{display:flex; justify-content:space-between; align-items:baseline;
+    border-top:1px solid var(--line-strong)}
+  tfoot td{border-top:0}
+  .tariff{flex-direction:column; align-items:flex-start}
+  .tariff dl{flex-direction:column; gap:6px; width:100%}
+  .tariff .row{flex-direction:row; align-items:baseline; justify-content:space-between; width:100%}
+  .btn,.btn-add{padding:12px 16px; font-size:15px}
+  .actions .btn{flex:1 1 44%}
+  .total .val{font-size:29px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div>
+      <h1>Калькулятор Росздравнадзора</h1>
+      <p>Рассчитайте стоимость сопровождения образовательных программ</p>
+    </div>
+    <div class="org">АРМА · для менеджеров</div>
+  </header>
+
+  <div class="grid">
+    <main class="flow">
+
+      <section class="step">
+        <div class="step-head">
+          <span class="step-num">Шаг 1</span>
+          <h2>Тариф</h2>
+          <p class="step-hint">Один тариф на весь расчёт. Нужны разные — сделайте отдельный расчёт.</p>
+        </div>
+        <div class="tariffs" id="tariffs"></div>
+      </section>
+
+      <section class="step">
+        <div class="step-head">
+          <span class="step-num">Шаг 2</span>
+          <h2>Специальности и программы</h2>
+          <p class="step-hint">Единица расчёта — одна программа по одной специальности.</p>
+        </div>
+        <div class="cards" id="cards"></div>
+        <button class="btn btn-add" id="addBtn" type="button">+ Добавить специальность</button>
+      </section>
+
+      <section class="step" id="detailStep" hidden>
+        <div class="step-head">
+          <span class="step-num">Шаг 3</span>
+          <h2>Детализация стоимости</h2>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>№</th><th>Специальность</th><th>Программа</th><th>Основание цены</th><th style="text-align:right">Цена</th>
+              </tr>
+            </thead>
+            <tbody id="detailBody"></tbody>
+            <tfoot id="detailFoot"></tfoot>
+          </table>
+        </div>
+      </section>
+
+      <section class="step">
+        <div class="actions">
+          <button class="btn btn-primary" id="copyClient" type="button">Скопировать расчёт</button>
+          <button class="btn" id="copyContract" type="button">Скопировать для договора</button>
+          <button class="btn btn-quiet" id="individual" type="button">Индивидуальные условия</button>
+          <button class="btn btn-quiet" id="reset" type="button">Новый расчёт</button>
+        </div>
+        <div class="note plain" id="individualNote" hidden>
+          <span class="mark">!</span>
+          <span>Индивидуальная цена требует согласования руководителя. В расчёте менеджера ручная корректировка стоимости недоступна.</span>
+        </div>
+      </section>
+
+    </main>
+
+    <aside class="rail" aria-label="Итоговый расчёт">
+      <div class="alert" id="bigWarning" hidden>
+        <strong>Необходим индивидуальный проектный расчёт</strong>
+        При сопровождении 31 и более программ стоимость рассчитывается индивидуально. Перед направлением предложения клиенту необходимо согласовать стоимость с руководителем.
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">Итого</div>
+        <div class="panel-body" id="summaryBody"></div>
+        <div class="total" id="totalBox" hidden>
+          <span class="lbl">Итоговая стоимость</span>
+          <span class="val" id="totalVal">—</span>
+        </div>
+      </div>
+
+      <div class="panel" id="payPanel" hidden>
+        <div class="panel-head">Оплата</div>
+        <div class="pay">
+          <div class="pay-item">
+            <span class="lbl">Аванс 50% — при заключении договора</span>
+            <span class="val" id="pay1">—</span>
+          </div>
+          <div class="pay-item">
+            <span class="lbl">50% — после получения заключения Росздравнадзора</span>
+            <span class="val" id="pay2">—</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+
+/* ============================================================
+   1. Данные тарифов
+   ============================================================ */
+const TARIFFS = {
+  roszdrav:         { name: "Росздравнадзор",             basePrice: 49000, additionalPkPrice: 29000 },
+  roszdrav_program: { name: "Росздравнадзор + программа", basePrice: 75000, additionalPkPrice: 35000 },
+  turnkey:          { name: "Под ключ",                   basePrice: 95000, additionalPkPrice: 55000 }
+};
+
+/* Шкала пакетных скидок. Считается только по обычным программам. */
+const DISCOUNT_SCALE = [
+  { min: 1,  max: 1,        rate: 0    },
+  { min: 2,  max: 5,        rate: 0.15 },
+  { min: 6,  max: 10,       rate: 0.25 },
+  { min: 11, max: 20,       rate: 0.35 },
+  { min: 21, max: 30,       rate: 0.45 },
+  { min: 31, max: Infinity, rate: null }   // null = индивидуальный расчёт
+];
+
+const KIND_LABEL  = { pp: "Профессиональная переподготовка", pk: "Повышение квалификации" };
+const KIND_SHORT  = { pp: "ПП", pk: "ПК" };
+const KIND_LOWER  = { pp: "профессиональная переподготовка", pk: "повышение квалификации" };
+
+const STORAGE_KEY = "arma_rzn_calc_v1";
+
+/* ============================================================
+   2. Состояние
+   ============================================================ */
+let uid = 0;
+let state = { tariff: "roszdrav_program", specialties: [] };
+
+function newSpecialty() {
+  return { id: "s" + (++uid), name: "", pp: false, pk: false, ppTitle: "", pkTitle: "" };
+}
+
+/* ============================================================
+   3. Расчётное ядро (чистые функции — без DOM)
+   Тариф хранится на каждой программе, чтобы в будущем можно было
+   назначать разные тарифы разным программам одного расчёта.
+   ============================================================ */
+function buildPrograms(st) {
+  const list = [];
+  st.specialties.forEach((s, i) => {
+    const specName = s.name.trim() || ("Специальность " + (i + 1));
+    const both = s.pp && s.pk;
+    if (s.pp) list.push({ specId: s.id, specName, kind: "pp", title: s.ppTitle.trim(),
+                          pricing: "regular", isMain: both, tariff: st.tariff });
+    if (s.pk) list.push({ specId: s.id, specName, kind: "pk", title: s.pkTitle.trim(),
+                          pricing: both ? "special" : "regular", isMain: false, tariff: st.tariff });
+  });
+  return list;
+}
+
+function discountFor(regularCount) {
+  if (regularCount <= 0) return 0;
+  const band = DISCOUNT_SCALE.find(b => regularCount >= b.min && regularCount <= b.max);
+  return band ? band.rate : 0;   // null => индивидуальный расчёт
+}
+
+function calculate(st) {
+  const programs   = buildPrograms(st);
+  const regular    = programs.filter(p => p.pricing === "regular");
+  const special    = programs.filter(p => p.pricing === "special");
+  const rate       = discountFor(regular.length);
+  const individual = rate === null;
+  const discount   = individual ? 0 : rate;
+
+  let listPrice = 0, discountAmount = 0, total = 0;
+
+  programs.forEach(p => {
+    const t = TARIFFS[p.tariff];
+    if (p.pricing === "special") {
+      p.base  = t.additionalPkPrice;
+      p.price = t.additionalPkPrice;          // пакетная скидка не применяется
+      p.saved = 0;
+    } else {
+      p.base  = t.basePrice;
+      p.price = individual ? null : Math.round(t.basePrice * (1 - discount));
+      p.saved = individual ? 0 : p.base - p.price;
+    }
+    listPrice += p.base;
+    if (!individual) { discountAmount += p.saved; total += p.price; }
+  });
+
+  const advance = individual ? null : Math.round(total * 0.5);
+  const balance = individual ? null : total - advance;   // так две части всегда дают итог
+
+  return {
+    programs, individual, discount,
+    counts: { specialties: st.specialties.length, programs: programs.length,
+              regular: regular.length, special: special.length },
+    listPrice, discountAmount,
+    total: individual ? null : total,
+    advance, balance
+  };
+}
+
+/* ============================================================
+   4. Утилиты
+   ============================================================ */
+const money = n => new Intl.NumberFormat("ru-RU").format(n) + " ₽";
+const pct   = r => Math.round(r * 100) + "%";
+
+function priceBasis(p, discount) {
+  if (p.pricing === "special") return { text: "Дополнительная программа по той же специальности", cls: "special" };
+  if (p.isMain) return discount > 0
+    ? { text: "Основная программа, скидка " + pct(discount), cls: "main" }
+    : { text: "Основная программа", cls: "main" };
+  return discount > 0
+    ? { text: "Пакетная цена, скидка " + pct(discount), cls: "pack" }
+    : { text: "Обычная программа", cls: "plain" };
+}
+
+function toast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => el.classList.remove("show"), 2200);
+}
+
+function invalidSpecialties() {
+  return state.specialties.filter(s => !s.pp && !s.pk);
+}
+
+/* ============================================================
+   5. Отрисовка тарифов
+   ============================================================ */
+function renderTariffs() {
+  const box = document.getElementById("tariffs");
+  box.innerHTML = "";
+  Object.entries(TARIFFS).forEach(([key, t]) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "tariff";
+    b.setAttribute("aria-pressed", String(state.tariff === key));
+    b.innerHTML =
+      '<span class="tick"></span>' +
+      '<span class="tariff-name">' + t.name + '</span>' +
+      '<dl>' +
+        '<div class="row base"><dt>Одна программа</dt><dd>' + money(t.basePrice) + '</dd></div>' +
+        '<div class="row"><dt>Вторая программа ПК<br>по той же специальности</dt><dd>' + money(t.additionalPkPrice) + '</dd></div>' +
+      '</dl>';
+    b.addEventListener("click", () => {
+      state.tariff = key;               // специальности не сбрасываются
+      renderTariffs();
+      recalc();
+    });
+    box.appendChild(b);
+  });
+}
+
+/* ============================================================
+   6. Карточки специальностей
+   Карточки не перерисовываются при вводе — фокус в поле сохраняется.
+   ============================================================ */
+function renderCard(s) {
+  const card = document.createElement("section");
+  card.className = "card";
+  card.dataset.id = s.id;
+  card.innerHTML =
+    '<div class="card-top">' +
+      '<div class="card-index"></div>' +
+      '<div class="field">' +
+        '<label>Название специальности</label>' +
+        '<input type="text" class="f-name" placeholder="Например: Физиотерапия">' +
+      '</div>' +
+      '<button type="button" class="btn-remove">Удалить</button>' +
+    '</div>' +
+    '<fieldset>' +
+      '<div class="legend">Какие программы нужны?</div>' +
+      '<div class="checks">' +
+        '<label class="check"><input type="checkbox" class="f-pp"><span>Профессиональная переподготовка</span></label>' +
+        '<label class="check"><input type="checkbox" class="f-pk"><span>Повышение квалификации</span></label>' +
+      '</div>' +
+    '</fieldset>' +
+    '<div class="note error c-error" hidden><span class="mark">!</span><span>Выберите вид образовательной программы.</span></div>' +
+    '<div class="titles c-titles" hidden>' +
+      '<div class="title-row r-pp" hidden>' +
+        '<span class="tag">Профессиональная переподготовка</span>' +
+        '<input type="text" class="f-pp-title" placeholder="Наименование программы (необязательно)">' +
+      '</div>' +
+      '<div class="title-row r-pk" hidden>' +
+        '<span class="tag">Повышение квалификации</span>' +
+        '<input type="text" class="f-pk-title" placeholder="Наименование программы (необязательно)">' +
+      '</div>' +
+    '</div>' +
+    '<div class="note info c-special" hidden><span class="mark">✓</span>' +
+      '<span>Применена специальная стоимость второй программы по той же специальности.</span></div>';
+
+  const q = sel => card.querySelector(sel);
+
+  q(".f-name").value     = s.name;
+  q(".f-pp").checked     = s.pp;
+  q(".f-pk").checked     = s.pk;
+  q(".f-pp-title").value = s.ppTitle;
+  q(".f-pk-title").value = s.pkTitle;
+
+  q(".f-name").addEventListener("input", e => { s.name = e.target.value; recalc(); });
+  q(".f-pp-title").addEventListener("input", e => { s.ppTitle = e.target.value; recalc(); });
+  q(".f-pk-title").addEventListener("input", e => { s.pkTitle = e.target.value; recalc(); });
+  q(".f-pp").addEventListener("change", e => { s.pp = e.target.checked; recalc(); });
+  q(".f-pk").addEventListener("change", e => { s.pk = e.target.checked; recalc(); });
+
+  q(".btn-remove").addEventListener("click", () => {
+    state.specialties = state.specialties.filter(x => x.id !== s.id);
+    card.remove();
+    recalc();
+  });
+
+  return card;
+}
+
+function syncCards() {
+  const cards = document.getElementById("cards");
+  state.specialties.forEach((s, i) => {
+    const card = cards.querySelector('.card[data-id="' + s.id + '"]');
+    if (!card) return;
+    const q = sel => card.querySelector(sel);
+    const both = s.pp && s.pk;
+    const none = !s.pp && !s.pk;
+
+    q(".card-index").textContent = i + 1;
+    q(".c-error").hidden   = !none;
+    card.classList.toggle("has-error", none);
+    q(".c-titles").hidden  = none;
+    q(".r-pp").hidden      = !s.pp;
+    q(".r-pk").hidden      = !s.pk;
+    q(".c-special").hidden = !both;
+  });
+}
+
+function addSpecialty(focus) {
+  const s = newSpecialty();
+  state.specialties.push(s);
+  document.getElementById("cards").appendChild(renderCard(s));
+  recalc();
+  if (focus !== false) {
+    const el = document.querySelector('.card[data-id="' + s.id + '"] .f-name');
+    if (el) el.focus();
+  }
+}
+
+/* ============================================================
+   7. Детализация и итоги
+   ============================================================ */
+function renderDetail(r) {
+  const step = document.getElementById("detailStep");
+  const body = document.getElementById("detailBody");
+  const foot = document.getElementById("detailFoot");
+
+  step.hidden = r.programs.length === 0;
+  body.innerHTML = "";
+  foot.innerHTML = "";
+  if (!r.programs.length) return;
+
+  r.programs.forEach((p, i) => {
+    const basis = priceBasis(p, r.discount);
+    const tr = document.createElement("tr");
+    tr.innerHTML =
+      '<td class="num">' + (i + 1) + '</td>' +
+      '<td class="spec"></td>' +
+      '<td class="kind"></td>' +
+      '<td><span class="badge ' + basis.cls + '">' + basis.text + '</span></td>' +
+      '<td class="price"></td>';
+    tr.children[1].textContent = p.specName;
+
+    const kindCell = tr.children[2];
+    kindCell.textContent = KIND_SHORT[p.kind];
+    if (p.title) {
+      const sub = document.createElement("span");
+      sub.className = "prog-title";
+      sub.textContent = p.title;
+      kindCell.appendChild(sub);
+    }
+
+    const priceCell = tr.children[4];
+    if (p.price === null) {
+      priceCell.textContent = "по согласованию";
+      priceCell.style.fontWeight = "500";
+      priceCell.style.color = "var(--ink-3)";
+    } else {
+      if (p.saved > 0) {
+        const s = document.createElement("span");
+        s.className = "strike";
+        s.textContent = new Intl.NumberFormat("ru-RU").format(p.base);
+        priceCell.appendChild(s);
+      }
+      priceCell.appendChild(document.createTextNode(money(p.price)));
+    }
+    body.appendChild(tr);
+  });
+
+  const tr = document.createElement("tr");
+  tr.innerHTML = '<td colspan="4">Итого</td><td class="price">' +
+    (r.individual ? "индивидуальный расчёт" : money(r.total)) + '</td>';
+  foot.appendChild(tr);
+}
+
+function sumRow(dt, dd, cls) {
+  return '<div class="sum-row ' + (cls || "") + '"><dt>' + dt + '</dt><dd>' + dd + '</dd></div>';
+}
+
+function renderSummary(r) {
+  const body     = document.getElementById("summaryBody");
+  const totalBox = document.getElementById("totalBox");
+  const payPanel = document.getElementById("payPanel");
+  const warning  = document.getElementById("bigWarning");
+
+  warning.hidden = !r.individual;
+
+  if (!r.programs.length) {
+    body.innerHTML = '<div class="empty">Добавьте специальность, чтобы увидеть расчёт.</div>';
+    totalBox.hidden = true;
+    payPanel.hidden = true;
+    return;
+  }
+
+  let html = "";
+  html += sumRow("Тариф", TARIFFS[state.tariff].name, "strong");
+  html += sumRow("Специальностей", r.counts.specialties);
+  html += sumRow("Всего программ", r.counts.programs);
+  html += '<div class="divider"></div>';
+  html += sumRow("Обычных программ", r.counts.regular);
+  html += sumRow("По специальной цене", r.counts.special);
+  html += sumRow("Пакетная скидка", r.individual ? "индивидуально" : pct(r.discount), "strong");
+
+  if (!r.individual && r.discountAmount > 0) {
+    html += '<div class="divider"></div>';
+    html += sumRow("Стоимость без скидки", money(r.listPrice));
+    html += sumRow("Сумма пакетной скидки", "− " + money(r.discountAmount), "discount");
+  }
+  body.innerHTML = html;
+
+  totalBox.hidden = r.individual;
+  payPanel.hidden = r.individual;
+  if (!r.individual) {
+    document.getElementById("totalVal").textContent = money(r.total);
+    document.getElementById("pay1").textContent = money(r.advance);
+    document.getElementById("pay2").textContent = money(r.balance);
+  }
+}
+
+/* ============================================================
+   8. Пересчёт
+   ============================================================ */
+let last = null;
+
+function recalc() {
+  syncCards();
+  last = calculate(state);
+  renderDetail(last);
+  renderSummary(last);
+
+  const blocked = last.individual || !last.programs.length || invalidSpecialties().length > 0;
+  document.getElementById("copyClient").disabled   = blocked;
+  document.getElementById("copyContract").disabled = blocked;
+
+  save();
+}
+
+/* ============================================================
+   9. Тексты для копирования
+   ============================================================ */
+function clientText(r) {
+  const lines = [];
+  lines.push("Тариф: " + TARIFFS[state.tariff].name);
+  lines.push("");
+  lines.push("Сопровождение:");
+  lines.push("");
+  r.programs.forEach((p, i) => {
+    const tail = p.pricing === "special"
+      ? " по специальной стоимости второй программы"
+      : "";
+    lines.push((i + 1) + ". " + p.specName + " — " + KIND_LOWER[p.kind] + tail + ".");
+  });
+  lines.push("");
+  lines.push("Стоимость услуг: " + money(r.total) + ".");
+  lines.push("");
+  lines.push("Оплата:");
+  lines.push("");
+  lines.push("- " + money(r.advance) + " — аванс 50%;");
+  lines.push("- " + money(r.balance) + " — после получения заключения Росздравнадзора.");
+  return lines.join("\n");
+}
+
+function contractText(r) {
+  const lines = [];
+  lines.push("Тариф: " + TARIFFS[state.tariff].name);
+  lines.push("");
+  r.programs.forEach((p, i) => {
+    lines.push((i + 1) + ".");
+    lines.push("Специальность: " + p.specName);
+    lines.push("Вид программы: " + KIND_LABEL[p.kind]);
+    lines.push("Наименование программы: " + (p.title || "—"));
+    if (p.pricing === "special") {
+      lines.push("Основание стоимости: дополнительная программа по той же специальности");
+    } else if (r.discount > 0) {
+      lines.push("Основание стоимости: пакетная цена, скидка " + pct(r.discount));
+    }
+    lines.push("Стоимость: " + money(p.price));
+    lines.push("");
+  });
+  lines.push("Общая стоимость: " + money(r.total));
+  lines.push("");
+  lines.push("Аванс 50%: " + money(r.advance));
+  lines.push("Окончательный платёж 50%: " + money(r.balance));
+  return lines.join("\n");
+}
+
+async function copy(text, okMsg) {
+  try {
+    await navigator.clipboard.writeText(text);
+    toast(okMsg);
+  } catch (e) {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand("copy");
+    ta.remove();
+    toast(ok ? okMsg : "Не удалось скопировать — выделите текст вручную");
+  }
+}
+
+/* ============================================================
+   10. Сохранение черновика
+   ============================================================ */
+function save() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+}
+
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    if (!data || !TARIFFS[data.tariff] || !Array.isArray(data.specialties)) return false;
+    state.tariff = data.tariff;
+    state.specialties = data.specialties.map(s => ({
+      id: "s" + (++uid),
+      name: String(s.name || ""),
+      pp: !!s.pp, pk: !!s.pk,
+      ppTitle: String(s.ppTitle || ""),
+      pkTitle: String(s.pkTitle || "")
+    }));
+    return state.specialties.length > 0;
+  } catch (e) { return false; }
+}
+
+/* ============================================================
+   11. Инициализация
+   ============================================================ */
+document.getElementById("addBtn").addEventListener("click", () => addSpecialty());
+
+document.getElementById("copyClient").addEventListener("click", () => {
+  if (last && !last.individual) copy(clientText(last), "Расчёт скопирован");
+});
+document.getElementById("copyContract").addEventListener("click", () => {
+  if (last && !last.individual) copy(contractText(last), "Данные для договора скопированы");
+});
+
+document.getElementById("individual").addEventListener("click", () => {
+  const n = document.getElementById("individualNote");
+  n.hidden = !n.hidden;
+});
+
+document.getElementById("reset").addEventListener("click", () => {
+  if (!confirm("Очистить расчёт и начать новый?")) return;
+  state = { tariff: "roszdrav_program", specialties: [] };
+  document.getElementById("cards").innerHTML = "";
+  document.getElementById("individualNote").hidden = true;
+  renderTariffs();
+  addSpecialty(false);
+});
+
+renderTariffs();
+if (load()) {
+  const cards = document.getElementById("cards");
+  state.specialties.forEach(s => cards.appendChild(renderCard(s)));
+  recalc();
+} else {
+  addSpecialty(false);
+}
+</script>
+</body>
+</html>
