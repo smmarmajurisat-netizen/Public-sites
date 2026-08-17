@@ -2336,20 +2336,19 @@ table{border-collapse:collapse}
 </x-dc>
 
 
-<!-- Модалка с формой GetCourse. Вставляется скриптом unbundle.py перед </body>,
-     вне React-корня <x-dc>, поэтому переотрисовка страницы её не трогает. -->
+<!-- Модалки с формами GetCourse. Вставляется скриптом unbundle.py перед </body>,
+     вне React-корня <x-dc>, поэтому переотрисовка страницы её не трогает.
+     Чтобы повесить форму на ещё одну кнопку — добавьте запись в WIDGETS ниже. -->
 <div class="arma-modal" id="arma-modal" hidden>
   <div class="arma-modal__backdrop" data-arma-close></div>
-  <div class="arma-modal__dialog" role="dialog" aria-modal="true" aria-label="Получить запись вебинара">
+  <div class="arma-modal__dialog" role="dialog" aria-modal="true" aria-label="Форма заявки">
     <button type="button" class="arma-modal__close" data-arma-close aria-label="Закрыть">
       <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
         <path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
       </svg>
     </button>
     <div class="arma-modal__scroll">
-      <div class="arma-modal__slot" id="arma-modal-slot">
-        <p class="arma-modal__loading">Загружаем форму…</p>
-      </div>
+      <div class="arma-modal__slots" id="arma-modal-slots"></div>
     </div>
   </div>
 </div>
@@ -2386,8 +2385,9 @@ table{border-collapse:collapse}
   max-height:calc(100vh - 48px); overflow-y:auto;
   border-radius:16px; padding:8px;
 }
-/* Виджет GetCourse сам выставляет высоту этому блоку через postMessage. */
+/* Виджет GetCourse сам выставляет высоту своему контейнеру через postMessage. */
 .arma-modal__slot{min-height:120px}
+.arma-modal__slot[hidden]{display:none}
 .arma-modal__loading{
   margin:0; padding:48px 16px; text-align:center;
   font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; color:#6d7f89;
@@ -2405,22 +2405,42 @@ table{border-collapse:collapse}
 
 <script>
 (function () {
-  var TRIGGER = 'Получить запись';
-  var WIDGET_ID = '5c8828bbf1f83dcac1f3dcaf83f5805c3d8284cc';
-  var WIDGET_SRC = 'https://online.arma-jurist.ru/pl/lite/widget/script?id=1643812';
+  // trigger — точный текст кнопки на странице; id и src берутся из кода виджета,
+  // который выдаёт GetCourse (id тега <script> и его src).
+  var WIDGETS = [
+    {
+      trigger: 'Получить запись',
+      label: 'Получить запись вебинара',
+      id: '5c8828bbf1f83dcac1f3dcaf83f5805c3d8284cc',
+      src: 'https://online.arma-jurist.ru/pl/lite/widget/script?id=1643812'
+    },
+    {
+      trigger: 'Получить полный комплект',
+      label: 'Получить практический комплект',
+      id: '7ee3f305b990f15fea881301a8391ea17bb4aad9',
+      src: 'https://online.arma-jurist.ru/pl/lite/widget/script?id=1643925'
+    }
+  ];
 
   var modal = document.getElementById('arma-modal');
-  var slot = document.getElementById('arma-modal-slot');
+  var slots = document.getElementById('arma-modal-slots');
+  var dialog = modal.querySelector('.arma-modal__dialog');
   var closeBtn = modal.querySelector('.arma-modal__close');
   var lastFocus = null;
-  var loaded = false;
 
   // Виджет вставляет iframe на место своего <script> и стартует по DOMContentLoaded
   // либо по кастомному событию StartWidget<id>. Грузим по первому клику, чтобы
-  // не тянуть стороннюю рамку и её куки на каждого посетителя страницы.
-  function loadWidget() {
-    if (loaded) return;
-    loaded = true;
+  // не тянуть сторонние рамки и их куки на каждого посетителя страницы.
+  function slotFor(w) {
+    var slot = slots.querySelector('[data-widget="' + w.id + '"]');
+    if (slot) return slot;
+
+    slot = document.createElement('div');
+    slot.className = 'arma-modal__slot';
+    slot.setAttribute('data-widget', w.id);
+    slot.innerHTML = '<p class="arma-modal__loading">Загружаем форму…</p>';
+    slots.appendChild(slot);
+
     // Заглушку убираем, когда виджет вставит свой iframe.
     if (window.MutationObserver) {
       var mo = new MutationObserver(function () {
@@ -2433,23 +2453,27 @@ table{border-collapse:collapse}
     }
 
     var s = document.createElement('script');
-    s.id = WIDGET_ID;
-    s.src = WIDGET_SRC;
+    s.id = w.id;
+    s.src = w.src;
     s.onload = function () {
-      document.dispatchEvent(new Event('StartWidget' + WIDGET_ID));
+      document.dispatchEvent(new Event('StartWidget' + w.id));
     };
     s.onerror = function () {
       slot.innerHTML = '<p class="arma-modal__loading">Форма не загрузилась. ' +
         'Обновите страницу или напишите нам на <a href="mailto:info@arma-jurist.ru">info@arma-jurist.ru</a>.</p>';
     };
     slot.appendChild(s);
+    return slot;
   }
 
-  function open(trigger) {
+  function open(w, trigger) {
     lastFocus = trigger || document.activeElement;
+    var active = slotFor(w);
+    var all = slots.querySelectorAll('.arma-modal__slot');
+    for (var i = 0; i < all.length; i++) all[i].hidden = all[i] !== active;
+    dialog.setAttribute('aria-label', w.label);
     modal.hidden = false;
     document.documentElement.style.overflow = 'hidden';
-    loadWidget();
     closeBtn.focus();
   }
 
@@ -2463,10 +2487,15 @@ table{border-collapse:collapse}
   // и при переотрисовке узел кнопки заменяется вместе с навешанными обработчиками.
   document.addEventListener('click', function (e) {
     var btn = e.target.closest ? e.target.closest('button') : null;
-    if (btn && !modal.contains(btn) && btn.textContent.trim() === TRIGGER) {
-      e.preventDefault();
-      open(btn);
-      return;
+    if (btn && !modal.contains(btn)) {
+      var text = btn.textContent.trim();
+      for (var i = 0; i < WIDGETS.length; i++) {
+        if (WIDGETS[i].trigger === text) {
+          e.preventDefault();
+          open(WIDGETS[i], btn);
+          return;
+        }
+      }
     }
     if (e.target.closest && e.target.closest('[data-arma-close]')) close();
   });
@@ -2478,7 +2507,11 @@ table{border-collapse:collapse}
   // Табом из модалки не уходим: держим фокус между кнопкой закрытия и iframe.
   modal.addEventListener('keydown', function (e) {
     if (e.key !== 'Tab') return;
-    var items = modal.querySelectorAll('button, iframe, a[href]');
+    var items = [];
+    var nodes = modal.querySelectorAll('button, iframe, a[href]');
+    for (var i = 0; i < nodes.length; i++) {
+      if (nodes[i].offsetParent !== null || nodes[i] === closeBtn) items.push(nodes[i]);
+    }
     if (!items.length) return;
     var first = items[0], last = items[items.length - 1];
     if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
