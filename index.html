@@ -4,7 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>АРМА — внутренние инструменты</title>
+<title>Юридическая компания «Арма»</title>
+<meta name="description" content="Юридическая компания «Арма» — правовая и методическая помощь в образовании. Работаем по всей России.">
 <style>
 :root{
   --ground:#eef1f4; --surface:#ffffff; --surface-2:#f6f9fa;
@@ -35,6 +36,14 @@
   --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.8);
   --shadow-lift:0 2px 6px rgba(0,0,0,.5), 0 18px 40px -22px rgba(0,0,0,.9);
 }
+:root[data-theme="light"]{
+  --ground:#eef1f4; --surface:#ffffff; --surface-2:#f6f9fa;
+  --ink:#0f1e28; --ink-2:#42555f; --ink-3:#6d7f89;
+  --line:#d9e0e5; --line-strong:#c2ccd3;
+  --accent:#0e5f6b; --accent-soft:#e1eff1; --accent-ink:#0a4a54; --on-accent:#ffffff;
+  --shadow:0 1px 2px rgba(15,30,40,.06), 0 8px 24px -16px rgba(15,30,40,.25);
+  --shadow-lift:0 2px 4px rgba(15,30,40,.08), 0 18px 40px -22px rgba(15,30,40,.45);
+}
 
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
@@ -42,148 +51,169 @@ body{
   background:var(--ground); color:var(--ink);
   font-family:var(--sans); font-size:16px; line-height:1.55;
   -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+  display:flex; align-items:center; justify-content:center;
+  padding:40px 20px;
 }
 a{color:inherit}
 :focus-visible{outline:2px solid var(--accent); outline-offset:3px; border-radius:6px}
 
-.wrap{max-width:1080px; margin:0 auto; padding:44px 24px 72px}
+.card{
+  width:100%; max-width:600px;
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--r);
+  box-shadow:var(--shadow); padding:44px 44px 30px;
+}
 
 /* ---------- шапка ---------- */
-.masthead{padding-bottom:26px; margin-bottom:34px; border-bottom:1px solid var(--line-strong)}
+.head{text-align:center; padding-bottom:26px; border-bottom:1px solid var(--line)}
 .eyebrow{
-  font-size:11px; letter-spacing:.2em; text-transform:uppercase;
-  color:var(--accent); font-weight:700; margin:0 0 10px;
+  font-size:11px; letter-spacing:.22em; text-transform:uppercase;
+  color:var(--accent); font-weight:700; margin:0 0 12px;
 }
-.masthead h1{
-  font-family:var(--serif); font-weight:600; font-size:38px; line-height:1.1;
-  letter-spacing:-.015em; margin:0 0 10px; text-wrap:balance;
+.head h1{
+  font-family:var(--serif); font-weight:600; font-size:52px; line-height:1;
+  letter-spacing:-.02em; margin:0 0 12px;
 }
-.masthead p{margin:0; color:var(--ink-2); font-size:16px; max-width:62ch}
+.tagline{
+  margin:0; color:var(--ink-2); font-size:16.5px; line-height:1.4;
+  text-wrap:balance;
+}
 
-/* ---------- сетка инструментов ---------- */
-.tools{
-  list-style:none; margin:0 0 40px; padding:0;
-  display:grid; grid-template-columns:repeat(auto-fit, minmax(290px,1fr)); gap:18px;
+/* ---------- о компании ---------- */
+.lead{
+  margin:26px 0 30px; color:var(--ink-2); font-size:15.5px; line-height:1.62;
+  text-align:center; text-wrap:pretty;
 }
-.tool{display:flex}
-.tool a{
-  display:flex; flex-direction:column; gap:12px; width:100%;
-  background:var(--surface); border:1px solid var(--line); border-radius:var(--r);
-  padding:22px 22px 18px; text-decoration:none; box-shadow:var(--shadow);
-  transition:border-color .14s, box-shadow .14s, transform .14s;
+
+/* ---------- контакты ---------- */
+.contacts{
+  background:var(--surface-2); border:1px solid var(--line); border-radius:var(--r);
+  padding:24px 24px 20px; text-align:center;
 }
-.tool a:hover{border-color:var(--accent); box-shadow:var(--shadow-lift); transform:translateY(-2px)}
-.tool h2{
-  margin:0; font-size:19px; font-weight:650; letter-spacing:-.01em;
-  line-height:1.25; text-wrap:balance;
+.contacts h2{
+  margin:0 0 16px; font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--ink-3); font-weight:700;
 }
-.tool .purpose{margin:0; color:var(--ink-2); font-size:14.5px; line-height:1.5}
-.tool .when{
-  margin:0; font-size:13.5px; line-height:1.5; color:var(--ink-2);
-  border-left:2px solid var(--accent-soft); padding-left:11px;
+.phone{
+  display:inline-block; font-family:var(--serif); font-size:29px; font-weight:600;
+  letter-spacing:-.01em; text-decoration:none; color:var(--ink);
+  transition:color .14s;
 }
-.tool .when b{
-  display:block; font-size:11px; font-weight:650; letter-spacing:.1em;
-  text-transform:uppercase; color:var(--ink-3); margin-bottom:2px;
+.phone:hover{color:var(--accent)}
+.phone-note{margin:5px 0 0; font-size:12.5px; color:var(--ink-3)}
+
+.links{
+  list-style:none; margin:18px 0 0; padding:0;
+  display:flex; flex-wrap:wrap; justify-content:center; gap:9px;
 }
-.tool .go{
-  margin-top:auto; padding-top:14px; border-top:1px solid var(--line);
-  display:flex; align-items:center; justify-content:space-between; gap:12px;
+.links a{
+  display:block; padding:8px 15px; font-size:14px; font-weight:600;
+  text-decoration:none; color:var(--accent-ink);
+  background:var(--accent-soft); border-radius:99px;
+  transition:box-shadow .14s;
 }
-.tool .addr{
-  font-size:13px; color:var(--ink-3); font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+.links a:hover{box-shadow:inset 0 0 0 1px var(--accent)}
+
+.meta{
+  margin:20px 0 0; padding:16px 0 0; border-top:1px solid var(--line);
+  display:flex; flex-wrap:wrap; justify-content:center; gap:8px 30px;
+  font-size:13.5px;
 }
-.tool .arrow{
-  font-size:14px; font-weight:650; color:var(--accent); white-space:nowrap;
-  transition:transform .14s;
+.meta div{max-width:100%}
+.meta dt{
+  font-size:10.5px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--ink-3); font-weight:700; margin-bottom:2px;
 }
-.tool a:hover .arrow{transform:translateX(3px)}
-@media (prefers-reduced-motion: reduce){
-  .tool a,.tool .arrow{transition:none}
-  .tool a:hover{transform:none}
-  .tool a:hover .arrow{transform:none}
+.meta dd{margin:0; color:var(--ink-2)}
+
+/* ---------- переход на основной сайт ---------- */
+.cta{
+  display:flex; align-items:center; justify-content:center; gap:9px;
+  margin:26px 0 0; padding:15px 22px;
+  background:var(--accent); color:var(--on-accent);
+  font-size:16px; font-weight:650; text-decoration:none;
+  border-radius:var(--r); box-shadow:var(--shadow);
+  transition:box-shadow .14s, transform .14s;
+}
+.cta:hover{box-shadow:var(--shadow-lift); transform:translateY(-1px)}
+.cta .arrow{transition:transform .14s}
+.cta:hover .arrow{transform:translateX(3px)}
+.cta-note{
+  margin:10px 0 0; text-align:center; font-size:12.5px; color:var(--ink-3);
+  text-wrap:pretty;
 }
 
 /* ---------- подвал ---------- */
-.notes{
-  background:var(--surface-2); border:1px solid var(--line); border-radius:var(--r);
-  padding:20px 22px; display:flex; flex-direction:column; gap:9px;
+.foot{
+  margin-top:28px; padding-top:18px; border-top:1px solid var(--line);
+  text-align:center; font-size:12.5px; color:var(--ink-3);
 }
-.notes h3{
-  margin:0 0 2px; font-size:11px; letter-spacing:.14em; text-transform:uppercase;
-  color:var(--ink-3); font-weight:700;
-}
-.notes p{margin:0; font-size:13.5px; line-height:1.55; color:var(--ink-2); max-width:78ch}
-.notes b{color:var(--ink); font-weight:650}
 
-@media (max-width:640px){
-  .wrap{padding:30px 16px 56px}
-  .masthead h1{font-size:29px}
-  .masthead{margin-bottom:26px}
-  .tools{grid-template-columns:1fr; gap:14px}
-  .tool a{padding:19px 18px 16px}
+@media (prefers-reduced-motion: reduce){
+  .cta,.cta .arrow,.phone,.links a{transition:none}
+  .cta:hover{transform:none}
+  .cta:hover .arrow{transform:none}
+}
+
+@media (max-width:560px){
+  body{padding:22px 14px}
+  .card{padding:30px 22px 22px; border-radius:10px}
+  .head h1{font-size:40px}
+  .tagline{font-size:15.5px}
+  .lead{margin:22px 0 24px; font-size:15px; text-align:left}
+  .contacts{padding:20px 16px 18px}
+  .phone{font-size:25px}
+  .meta{gap:14px; flex-direction:column}
 }
 </style>
 </head>
 <body>
-<div class="wrap">
 
-  <header class="masthead">
-    <p class="eyebrow">АРМА · для сотрудников</p>
-    <h1>Внутренние инструменты</h1>
-    <p>Рабочие калькуляторы отдела продаж. Выберите нужный — все считают прямо в браузере,
-       устанавливать ничего не надо.</p>
+<main class="card">
+
+  <header class="head">
+    <p class="eyebrow">Юридическая компания</p>
+    <h1>Арма</h1>
+    <p class="tagline">Правовая и методическая помощь в образовании</p>
   </header>
 
-  <ul class="tools">
+  <p class="lead">Помогаем образовательным организациям получать лицензии
+     и выстраивать работу так, чтобы она выдерживала проверку надзорных
+     органов. Берём на себя документы, программы и переписку с ведомствами.
+     Работаем по всей России.</p>
 
-    <li class="tool">
-      <a href="/arma-segmentation/">
-        <h2>Калькулятор сегментации клиента</h2>
-        <p class="purpose">Шесть вопросов по ходу звонка собирают готовый сценарий: сегмент клиента,
-          рекомендуемый пакет, цены, аргументы, дожим и предупреждения по региональным рискам.
-          Внизу — база кейсов с фильтрами по сфере и городу.</p>
-        <p class="when"><b>Когда применять</b>На первом звонке, пока клиент ещё не квалифицирован
-          и нужно на ходу понять, что ему предлагать.</p>
-        <span class="go"><span class="addr">/arma-segmentation/</span><span class="arrow">Открыть →</span></span>
-      </a>
-    </li>
+  <section class="contacts" aria-labelledby="contacts-title">
+    <h2 id="contacts-title">Контакты</h2>
 
-    <li class="tool">
-      <a href="/arma-calculator/">
-        <h2>Калькулятор сценария продажи</h2>
-        <p class="purpose">Диагностика клиента, рекомендация пакета, расчёт стоимости и графика
-          платежей, сценарий разговора и краткое резюме для переноса в CRM.</p>
-        <p class="when"><b>Когда применять</b>Когда нужно провести разговор по шагам и сразу
-          зафиксировать итог сделки.</p>
-        <span class="go"><span class="addr">/arma-calculator/</span><span class="arrow">Открыть →</span></span>
-      </a>
-    </li>
+    <a class="phone" href="tel:+78003013699">8 800 301-36-99</a>
+    <p class="phone-note">Звонок по России бесплатный</p>
 
-    <li class="tool">
-      <a href="/rzn/">
-        <h2>Калькулятор Росздравнадзора</h2>
-        <p class="purpose">Стоимость сопровождения образовательных программ: тариф, пакетные скидки,
-          специальная цена второй программы по той же специальности, аванс и окончательный платёж.
-          Готовит текст для клиента и данные для договора.</p>
-        <p class="when"><b>Когда применять</b>Когда клиент назвал специальности и виды программ,
-          а нужно быстро дать точную сумму.</p>
-        <span class="go"><span class="addr">/rzn/</span><span class="arrow">Открыть →</span></span>
-      </a>
-    </li>
+    <ul class="links">
+      <li><a href="https://wa.me/79689845229">WhatsApp</a></li>
+      <li><a href="https://t.me/+79689845229">Telegram</a></li>
+      <li><a href="mailto:sale@arma-jurist.ru">sale@arma-jurist.ru</a></li>
+    </ul>
 
-  </ul>
-
-  <section class="notes">
-    <h3>Что важно знать</h3>
-    <p><b>Все расчёты выполняются в браузере.</b> Введённые данные никуда не отправляются
-       и нигде не сохраняются, кроме вашего компьютера.</p>
-    <p><b>Цены и правила расчёта зашиты в страницы.</b> Если прайс изменился, инструмент нужно
-       обновить — иначе он продолжит считать по старому.</p>
-    <p><b>Инструменты рекомендуют, решение принимает менеджер.</b> Индивидуальные условия и любые
-       отклонения от расчёта согласуются с руководителем.</p>
+    <dl class="meta">
+      <div>
+        <dt>Офис</dt>
+        <dd>Москва, Калашный переулок, 3, офис 10</dd>
+      </div>
+      <div>
+        <dt>Часы работы</dt>
+        <dd>Пн–Пт, 10:00–19:00</dd>
+      </div>
+    </dl>
   </section>
 
-</div>
+  <a class="cta" href="https://arma-jurist.ru/">
+    Перейти на основной сайт<span class="arrow">→</span>
+  </a>
+  <p class="cta-note">arma-jurist.ru — услуги, портфолио и полная информация о компании</p>
+
+  <footer class="foot">© Арма</footer>
+
+</main>
+
 </body>
 </html>
