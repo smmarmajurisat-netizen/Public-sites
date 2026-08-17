@@ -2336,4 +2336,155 @@ table{border-collapse:collapse}
 </x-dc>
 
 
+<!-- Модалка с формой GetCourse. Вставляется скриптом unbundle.py перед </body>,
+     вне React-корня <x-dc>, поэтому переотрисовка страницы её не трогает. -->
+<div class="arma-modal" id="arma-modal" hidden>
+  <div class="arma-modal__backdrop" data-arma-close></div>
+  <div class="arma-modal__dialog" role="dialog" aria-modal="true" aria-label="Получить запись вебинара">
+    <button type="button" class="arma-modal__close" data-arma-close aria-label="Закрыть">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+        <path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <div class="arma-modal__scroll">
+      <div class="arma-modal__slot" id="arma-modal-slot">
+        <p class="arma-modal__loading">Загружаем форму…</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.arma-modal[hidden]{display:none}
+.arma-modal{
+  position:fixed; inset:0; z-index:9999;
+  display:flex; align-items:center; justify-content:center;
+  padding:24px 16px;
+}
+.arma-modal__backdrop{
+  position:absolute; inset:0;
+  background:rgba(9,18,44,.72); backdrop-filter:blur(3px);
+  animation:arma-fade .18s ease-out;
+}
+.arma-modal__dialog{
+  position:relative; z-index:1;
+  width:100%; max-width:560px; max-height:calc(100vh - 48px);
+  background:#fff; border-radius:16px;
+  box-shadow:0 24px 64px -16px rgba(9,18,44,.55);
+  animation:arma-rise .2s ease-out;
+}
+.arma-modal__close{
+  position:absolute; top:10px; right:10px; z-index:2;
+  width:36px; height:36px; padding:0; border:0; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(18,34,78,.06); color:#12224e; cursor:pointer;
+  transition:background .14s, color .14s;
+}
+.arma-modal__close:hover{background:#e54038; color:#fff}
+.arma-modal__close:focus-visible{outline:2px solid #e54038; outline-offset:2px}
+.arma-modal__scroll{
+  max-height:calc(100vh - 48px); overflow-y:auto;
+  border-radius:16px; padding:8px;
+}
+/* Виджет GetCourse сам выставляет высоту этому блоку через postMessage. */
+.arma-modal__slot{min-height:120px}
+.arma-modal__loading{
+  margin:0; padding:48px 16px; text-align:center;
+  font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; color:#6d7f89;
+}
+@keyframes arma-fade{from{opacity:0}to{opacity:1}}
+@keyframes arma-rise{from{opacity:0; transform:translateY(12px)}to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){
+  .arma-modal__backdrop,.arma-modal__dialog{animation:none}
+}
+@media (max-width:560px){
+  .arma-modal{padding:12px}
+  .arma-modal__dialog,.arma-modal__scroll{max-height:calc(100vh - 24px)}
+}
+</style>
+
+<script>
+(function () {
+  var TRIGGER = 'Получить запись';
+  var WIDGET_ID = '5c8828bbf1f83dcac1f3dcaf83f5805c3d8284cc';
+  var WIDGET_SRC = 'https://online.arma-jurist.ru/pl/lite/widget/script?id=1643812';
+
+  var modal = document.getElementById('arma-modal');
+  var slot = document.getElementById('arma-modal-slot');
+  var closeBtn = modal.querySelector('.arma-modal__close');
+  var lastFocus = null;
+  var loaded = false;
+
+  // Виджет вставляет iframe на место своего <script> и стартует по DOMContentLoaded
+  // либо по кастомному событию StartWidget<id>. Грузим по первому клику, чтобы
+  // не тянуть стороннюю рамку и её куки на каждого посетителя страницы.
+  function loadWidget() {
+    if (loaded) return;
+    loaded = true;
+    // Заглушку убираем, когда виджет вставит свой iframe.
+    if (window.MutationObserver) {
+      var mo = new MutationObserver(function () {
+        if (!slot.querySelector('iframe')) return;
+        var p = slot.querySelector('.arma-modal__loading');
+        if (p) p.remove();
+        mo.disconnect();
+      });
+      mo.observe(slot, { childList: true });
+    }
+
+    var s = document.createElement('script');
+    s.id = WIDGET_ID;
+    s.src = WIDGET_SRC;
+    s.onload = function () {
+      document.dispatchEvent(new Event('StartWidget' + WIDGET_ID));
+    };
+    s.onerror = function () {
+      slot.innerHTML = '<p class="arma-modal__loading">Форма не загрузилась. ' +
+        'Обновите страницу или напишите нам на <a href="mailto:info@arma-jurist.ru">info@arma-jurist.ru</a>.</p>';
+    };
+    slot.appendChild(s);
+  }
+
+  function open(trigger) {
+    lastFocus = trigger || document.activeElement;
+    modal.hidden = false;
+    document.documentElement.style.overflow = 'hidden';
+    loadWidget();
+    closeBtn.focus();
+  }
+
+  function close() {
+    modal.hidden = true;
+    document.documentElement.style.overflow = '';
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+
+  // Делегирование, а не слушатель на самой кнопке: разметку тарифов рисует React,
+  // и при переотрисовке узел кнопки заменяется вместе с навешанными обработчиками.
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest ? e.target.closest('button') : null;
+    if (btn && !modal.contains(btn) && btn.textContent.trim() === TRIGGER) {
+      e.preventDefault();
+      open(btn);
+      return;
+    }
+    if (e.target.closest && e.target.closest('[data-arma-close]')) close();
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !modal.hidden) close();
+  });
+
+  // Табом из модалки не уходим: держим фокус между кнопкой закрытия и iframe.
+  modal.addEventListener('keydown', function (e) {
+    if (e.key !== 'Tab') return;
+    var items = modal.querySelectorAll('button, iframe, a[href]');
+    if (!items.length) return;
+    var first = items[0], last = items[items.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
+})();
+</script>
+
 </body></html>
