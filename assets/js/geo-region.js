@@ -8,7 +8,10 @@
 
   var CACHE_KEY  = 'arma_geo_v2';
   var CACHE_TTL  = 7 * 24 * 60 * 60 * 1000;
-  var TIMEOUT_MS = 3000;
+  // Первый провайдер отвечает быстро; длинное ожидание только задерживает
+  // подмену текста и расширяет гонку с монтированием компонента.
+  var TIMEOUT_FIRST = 1500;
+  var TIMEOUT_NEXT  = 3000;
 
   // Бандл заменяет корневой элемент через documentElement.replaceWith,
   // поэтому подставляем не один раз, а опрашиваем document ~20 секунд.
@@ -296,6 +299,7 @@
   var PROVIDERS = [
     {
       url: 'https://ipwho.is/',
+      timeout: TIMEOUT_FIRST,
       parse: function (d) {
         if (!d || d.success === false) return null;
         return { country: d.country_code, names: [d.city, d.region] };
@@ -303,6 +307,7 @@
     },
     {
       url: 'https://ipapi.co/json/',
+      timeout: TIMEOUT_NEXT,
       parse: function (d) {
         if (!d || d.error) return null;
         return { country: d.country_code, names: [d.city, d.region] };
@@ -310,6 +315,7 @@
     },
     {
       url: 'https://api.sypexgeo.net/json/',
+      timeout: TIMEOUT_NEXT,
       parse: function (d) {
         if (!d) return null;
         var city = d.city && (d.city.name_ru || d.city.name_en);
@@ -355,12 +361,12 @@
     return resolve(raw);
   }
 
-  function fetchJson(url) {
+  function fetchJson(url, timeoutMs) {
     return new Promise(function (resolve) {
       var done = false;
       var timer = setTimeout(function () {
         if (!done) { done = true; resolve(null); }
-      }, TIMEOUT_MS);
+      }, timeoutMs);
       fetch(url, { cache: 'no-store' })
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (d) {
@@ -377,7 +383,7 @@
     function next() {
       if (i >= PROVIDERS.length) return Promise.resolve(null);
       var p = PROVIDERS[i++];
-      return fetchJson(p.url).then(function (data) {
+      return fetchJson(p.url, p.timeout || TIMEOUT_NEXT).then(function (data) {
         var info = null;
         try { info = p.parse(data); } catch (e) { info = null; }
         if (window.ARMA_GEO_DEBUG) {
@@ -441,7 +447,8 @@
 
   function start(res) {
     pushToUrl(res);
-    window.ARMA_GEO = res.phrase;
+    window.ARMA_GEO = res.phrase;          // предложная фраза, как в документации скрипта
+    window.ARMA_GEO_REGION = res.readable; // именительный падеж — его ждёт CRM
     try {
       document.dispatchEvent(new CustomEvent('arma:geo', { detail: res }));
     } catch (e) {}
