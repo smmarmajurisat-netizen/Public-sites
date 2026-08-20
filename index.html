@@ -219,12 +219,14 @@
 
     if (paint()) { return; }
 
-    // Компонент ещё не отрисован — ждём появления слотов.
-    var observer = new MutationObserver(function () {
-      if (paint()) { observer.disconnect(); }
-    });
-    observer.observe(document.documentElement, { childList: true, subtree: true });
-    setTimeout(function () { observer.disconnect(); }, 15000);
+    // Бандлер заменяет корневой элемент через documentElement.replaceWith,
+    // поэтому MutationObserver на старом корне не пережил бы замену.
+    // Опрашиваем document — он остаётся тем же объектом.
+    var attempts = 0;
+    var poll = setInterval(function () {
+      attempts += 1;
+      if (paint() || attempts > 133) { clearInterval(poll); }
+    }, 150);
   }
 
   var controller = new AbortController();
