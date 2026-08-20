@@ -183,23 +183,22 @@
   // Уровень 1. Параметры рекламной кампании имеют приоритет — выходим.
   if ((params.get('geo_phrase') || '').trim()) { return; }
 
-  function applyRegion(city) {
-    var phrase = CITIES[city];
+  function applyPhrase(phrase, readable, pushToUrl) {
     if (!phrase) { return; }
 
-    var readable = RUS_NAMES[city] || city;
-
-    // Кладём значения в URL: компонент лендинга прочитает их штатным
-    // способом при монтировании и передаст в заявку вместе с метками.
-    try {
-      var url = new URL(location.href);
-      if (!url.searchParams.get('geo_phrase')) {
-        url.searchParams.set('geo_phrase', phrase);
-        url.searchParams.set('geo_region', readable);
-        history.replaceState(null, '', url.toString());
+    // В URL кладём только формы «в <городе>»: компонент лендинга
+    // принимает фразы, начинающиеся с в/во/на, остальные игнорирует.
+    if (pushToUrl) {
+      try {
+        var url = new URL(location.href);
+        if (!url.searchParams.get('geo_phrase')) {
+          url.searchParams.set('geo_phrase', phrase);
+          url.searchParams.set('geo_region', readable);
+          history.replaceState(null, '', url.toString());
+        }
+      } catch (error) {
+        // Не критично: ниже слоты обновляются напрямую.
       }
-    } catch (error) {
-      // Не критично: ниже слоты обновляются напрямую.
     }
 
     function paint() {
@@ -236,9 +235,20 @@
     .then(function (response) { return response.json(); })
     .then(function (data) {
       clearTimeout(timer);
-      if (data && data.success !== false && data.country_code === 'RU' && data.city) {
-        applyRegion(data.city);
+      if (!data || data.success === false || !data.country_code) { return; }
+
+      if (data.country_code === 'RU') {
+        // Россия: подставляем город, если он есть в словаре.
+        // Иначе остаётся штатное «в вашем регионе».
+        if (data.city && CITIES[data.city]) {
+          applyPhrase(CITIES[data.city], RUS_NAMES[data.city] || data.city, true);
+        }
+        return;
       }
+
+      // Не Россия: универсальная формулировка. В URL не пишем —
+      // компонент такую фразу всё равно отбросит по своей проверке.
+      applyPhrase('по всей России', 'Вся Россия', false);
     })
     .catch(function () {
       clearTimeout(timer);
