@@ -17,6 +17,233 @@
       This page requires JavaScript to display.
     </div>
   </noscript>
+<script>
+(function () {
+  'use strict';
+
+  // Город из ответа GeoIP -> предложная форма для заголовка.
+  var CITIES = {
+    'Moscow': 'в Москве',
+    'Saint Petersburg': 'в Санкт-Петербурге',
+    'St Petersburg': 'в Санкт-Петербурге',
+    'Novosibirsk': 'в Новосибирске',
+    'Yekaterinburg': 'в Екатеринбурге',
+    'Ekaterinburg': 'в Екатеринбурге',
+    'Kazan': 'в Казани',
+    'Nizhny Novgorod': 'в Нижнем Новгороде',
+    'Chelyabinsk': 'в Челябинске',
+    'Krasnoyarsk': 'в Красноярске',
+    'Samara': 'в Самаре',
+    'Ufa': 'в Уфе',
+    'Rostov-on-Don': 'в Ростове-на-Дону',
+    'Rostov-na-Donu': 'в Ростове-на-Дону',
+    'Omsk': 'в Омске',
+    'Krasnodar': 'в Краснодаре',
+    'Voronezh': 'в Воронеже',
+    'Perm': 'в Перми',
+    'Volgograd': 'в Волгограде',
+    'Saratov': 'в Саратове',
+    'Tyumen': 'в Тюмени',
+    'Tolyatti': 'в Тольятти',
+    'Barnaul': 'в Барнауле',
+    'Izhevsk': 'в Ижевске',
+    'Ulyanovsk': 'в Ульяновске',
+    'Irkutsk': 'в Иркутске',
+    'Khabarovsk': 'в Хабаровске',
+    'Yaroslavl': 'в Ярославле',
+    'Vladivostok': 'во Владивостоке',
+    'Makhachkala': 'в Махачкале',
+    'Tomsk': 'в Томске',
+    'Orenburg': 'в Оренбурге',
+    'Kemerovo': 'в Кемерово',
+    'Novokuznetsk': 'в Новокузнецке',
+    'Ryazan': 'в Рязани',
+    'Astrakhan': 'в Астрахани',
+    'Naberezhnye Chelny': 'в Набережных Челнах',
+    'Penza': 'в Пензе',
+    'Kirov': 'в Кирове',
+    'Lipetsk': 'в Липецке',
+    'Cheboksary': 'в Чебоксарах',
+    'Tula': 'в Туле',
+    'Kaliningrad': 'в Калининграде',
+    'Kursk': 'в Курске',
+    'Stavropol': 'в Ставрополе',
+    'Sochi': 'в Сочи',
+    'Belgorod': 'в Белгороде',
+    'Vladimir': 'во Владимире',
+    'Arkhangelsk': 'в Архангельске',
+    'Kaluga': 'в Калуге',
+    'Bryansk': 'в Брянске',
+    'Ivanovo': 'в Иванове',
+    'Magnitogorsk': 'в Магнитогорске',
+    'Tver': 'в Твери',
+    'Kurgan': 'в Кургане',
+    'Surgut': 'в Сургуте',
+    'Chita': 'в Чите',
+    'Smolensk': 'в Смоленске',
+    'Volzhsky': 'в Волжском',
+    'Cherepovets': 'в Череповце',
+    'Vologda': 'в Вологде',
+    'Saransk': 'в Саранске',
+    'Yakutsk': 'в Якутске',
+    'Nizhny Tagil': 'в Нижнем Тагиле',
+    'Tambov': 'в Тамбове',
+    'Groznyy': 'в Грозном',
+    'Grozny': 'в Грозном',
+    'Sterlitamak': 'в Стерлитамаке',
+    'Kostroma': 'в Костроме',
+    'Petrozavodsk': 'в Петрозаводске',
+    'Nizhnevartovsk': 'в Нижневартовске',
+    'Novorossiysk': 'в Новороссийске',
+    'Yoshkar-Ola': 'в Йошкар-Оле'
+  };
+
+  // Именительный падеж — для подписей вида «Ваш регион».
+  var RUS_NAMES = {
+    'Moscow': 'Москва',
+    'Saint Petersburg': 'Санкт-Петербург',
+    'St Petersburg': 'Санкт-Петербург',
+    'Novosibirsk': 'Новосибирск',
+    'Yekaterinburg': 'Екатеринбург',
+    'Ekaterinburg': 'Екатеринбург',
+    'Kazan': 'Казань',
+    'Nizhny Novgorod': 'Нижний Новгород',
+    'Chelyabinsk': 'Челябинск',
+    'Krasnoyarsk': 'Красноярск',
+    'Samara': 'Самара',
+    'Ufa': 'Уфа',
+    'Rostov-on-Don': 'Ростов-на-Дону',
+    'Rostov-na-Donu': 'Ростов-на-Дону',
+    'Omsk': 'Омск',
+    'Krasnodar': 'Краснодар',
+    'Voronezh': 'Воронеж',
+    'Perm': 'Пермь',
+    'Volgograd': 'Волгоград',
+    'Saratov': 'Саратов',
+    'Tyumen': 'Тюмень',
+    'Tolyatti': 'Тольятти',
+    'Barnaul': 'Барнаул',
+    'Izhevsk': 'Ижевск',
+    'Ulyanovsk': 'Ульяновск',
+    'Irkutsk': 'Иркутск',
+    'Khabarovsk': 'Хабаровск',
+    'Yaroslavl': 'Ярославль',
+    'Vladivostok': 'Владивосток',
+    'Makhachkala': 'Махачкала',
+    'Tomsk': 'Томск',
+    'Orenburg': 'Оренбург',
+    'Kemerovo': 'Кемерово',
+    'Novokuznetsk': 'Новокузнецк',
+    'Ryazan': 'Рязань',
+    'Astrakhan': 'Астрахань',
+    'Naberezhnye Chelny': 'Набережные Челны',
+    'Penza': 'Пенза',
+    'Kirov': 'Киров',
+    'Lipetsk': 'Липецк',
+    'Cheboksary': 'Чебоксары',
+    'Tula': 'Тула',
+    'Kaliningrad': 'Калининград',
+    'Kursk': 'Курск',
+    'Stavropol': 'Ставрополь',
+    'Sochi': 'Сочи',
+    'Belgorod': 'Белгород',
+    'Vladimir': 'Владимир',
+    'Arkhangelsk': 'Архангельск',
+    'Kaluga': 'Калуга',
+    'Bryansk': 'Брянск',
+    'Ivanovo': 'Иваново',
+    'Magnitogorsk': 'Магнитогорск',
+    'Tver': 'Тверь',
+    'Kurgan': 'Курган',
+    'Surgut': 'Сургут',
+    'Chita': 'Чита',
+    'Smolensk': 'Смоленск',
+    'Volzhsky': 'Волжский',
+    'Cherepovets': 'Череповец',
+    'Vologda': 'Вологда',
+    'Saransk': 'Саранск',
+    'Yakutsk': 'Якутск',
+    'Nizhny Tagil': 'Нижний Тагил',
+    'Tambov': 'Тамбов',
+    'Groznyy': 'Грозный',
+    'Grozny': 'Грозный',
+    'Sterlitamak': 'Стерлитамак',
+    'Kostroma': 'Кострома',
+    'Petrozavodsk': 'Петрозаводск',
+    'Nizhnevartovsk': 'Нижневартовск',
+    'Novorossiysk': 'Новороссийск',
+    'Yoshkar-Ola': 'Йошкар-Ола'
+  };
+
+  var TIMEOUT_MS = 1200;
+  var ENDPOINT = 'https://ipwho.is/?fields=city,country_code,success';
+
+  var params = new URLSearchParams(location.search);
+
+  // Уровень 1. Параметры рекламной кампании имеют приоритет — выходим.
+  if ((params.get('geo_phrase') || '').trim()) { return; }
+
+  function applyRegion(city) {
+    var phrase = CITIES[city];
+    if (!phrase) { return; }
+
+    var readable = RUS_NAMES[city] || city;
+
+    // Кладём значения в URL: компонент лендинга прочитает их штатным
+    // способом при монтировании и передаст в заявку вместе с метками.
+    try {
+      var url = new URL(location.href);
+      if (!url.searchParams.get('geo_phrase')) {
+        url.searchParams.set('geo_phrase', phrase);
+        url.searchParams.set('geo_region', readable);
+        history.replaceState(null, '', url.toString());
+      }
+    } catch (error) {
+      // Не критично: ниже слоты обновляются напрямую.
+    }
+
+    function paint() {
+      var primary = document.querySelectorAll('[data-region-slot="1"]');
+      var secondary = document.querySelectorAll('[data-region-slot="2"],[data-region-slot="3"]');
+      if (!primary.length && !secondary.length) { return false; }
+
+      Array.prototype.forEach.call(primary, function (node) {
+        node.textContent = phrase;
+      });
+      Array.prototype.forEach.call(secondary, function (node) {
+        node.textContent = readable;
+      });
+      document.title = 'Образовательная лицензия ' + phrase + ' под ключ | АРМА';
+      return true;
+    }
+
+    if (paint()) { return; }
+
+    // Компонент ещё не отрисован — ждём появления слотов.
+    var observer = new MutationObserver(function () {
+      if (paint()) { observer.disconnect(); }
+    });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+    setTimeout(function () { observer.disconnect(); }, 15000);
+  }
+
+  var controller = new AbortController();
+  var timer = setTimeout(function () { controller.abort(); }, TIMEOUT_MS);
+
+  fetch(ENDPOINT, { signal: controller.signal })
+    .then(function (response) { return response.json(); })
+    .then(function (data) {
+      clearTimeout(timer);
+      if (data && data.success !== false && data.country_code === 'RU' && data.city) {
+        applyRegion(data.city);
+      }
+    })
+    .catch(function () {
+      clearTimeout(timer);
+      // Тихо остаётся дефолт «в вашем регионе» — это штатное поведение.
+    });
+})();
+</script>
 </head>
 <body>
   <div id="__bundler_thumbnail">
