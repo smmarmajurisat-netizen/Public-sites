@@ -143,36 +143,487 @@
     'адлер': 'в Адлере', 'adler': 'в Адлере',
     'краснодарский': 'в Краснодарском крае'
   };
-
+  // Субъекты РФ: название от GeoIP -> предложная форма.
+  // Проверяется ДО словаря городов: ipwho.is стоит первым провайдером
+  // и отдаёт латиницу, поэтому «Tula Oblast» иначе выродится в город Тулу.
+  // Предложные формы получены тем же правилом, что в regionToPrepositional.
   var ENG_REGIONS = {
+    // республики
+    'adygea': 'в Республике Адыгея',
+    'adygeya': 'в Республике Адыгея',
+    'republic of adygea': 'в Республике Адыгея',
+    'adygea republic': 'в Республике Адыгея',
+    'adygeya republic': 'в Республике Адыгея',
+    'altai republic': 'в Республике Алтай',
+    'republic of altai': 'в Республике Алтай',
+    'gorno-altai republic': 'в Республике Алтай',
+    'bashkortostan': 'в Республике Башкортостан',
+    'republic of bashkortostan': 'в Республике Башкортостан',
+    'bashkortostan republic': 'в Республике Башкортостан',
+    'bashkiria': 'в Республике Башкортостан',
+    'buryatia': 'в Республике Бурятия',
+    'republic of buryatia': 'в Республике Бурятия',
+    'buryatia republic': 'в Республике Бурятия',
+    'buryat republic': 'в Республике Бурятия',
+    'dagestan': 'в Республике Дагестан',
+    'republic of dagestan': 'в Республике Дагестан',
+    'dagestan republic': 'в Республике Дагестан',
+    'ingushetia': 'в Республике Ингушетия',
+    'republic of ingushetia': 'в Республике Ингушетия',
+    'ingushetia republic': 'в Республике Ингушетия',
+    'kabardino-balkaria': 'в Кабардино-Балкарской Республике',
+    'kabardino-balkarian republic': 'в Кабардино-Балкарской Республике',
+    'republic of kabardino-balkaria': 'в Кабардино-Балкарской Республике',
+    'kalmykia': 'в Республике Калмыкия',
+    'republic of kalmykia': 'в Республике Калмыкия',
+    'kalmykia republic': 'в Республике Калмыкия',
+    'karachay-cherkessia': 'в Карачаево-Черкесской Республике',
+    'karachay-cherkess republic': 'в Карачаево-Черкесской Республике',
+    'republic of karachay-cherkessia': 'в Карачаево-Черкесской Республике',
+    'karelia': 'в Республике Карелия',
+    'republic of karelia': 'в Республике Карелия',
+    'karelia republic': 'в Республике Карелия',
+    'komi': 'в Республике Коми',
+    'komi republic': 'в Республике Коми',
+    'republic of komi': 'в Республике Коми',
+    'crimea': 'в Республике Крым',
+    'republic of crimea': 'в Республике Крым',
+    'crimea republic': 'в Республике Крым',
+    'mari el': 'в Республике Марий Эл',
+    'mari el republic': 'в Республике Марий Эл',
+    'republic of mari el': 'в Республике Марий Эл',
+    'mordovia': 'в Республике Мордовия',
+    'republic of mordovia': 'в Республике Мордовия',
+    'mordovia republic': 'в Республике Мордовия',
+    'sakha': 'в Республике Саха',
+    'sakha republic': 'в Республике Саха',
+    'republic of sakha': 'в Республике Саха',
+    'sakha (yakutia)': 'в Республике Саха',
+    'sakha (yakutia) republic': 'в Республике Саха',
+    'yakutia': 'в Республике Саха',
+    'yakutia republic': 'в Республике Саха',
+    'north ossetia': 'в Республике Северная Осетия — Алания',
+    'north ossetia-alania': 'в Республике Северная Осетия — Алания',
+    'republic of north ossetia-alania': 'в Республике Северная Осетия — Алания',
+    'north ossetia — alania': 'в Республике Северная Осетия — Алания',
+    'tatarstan': 'в Республике Татарстан',
+    'republic of tatarstan': 'в Республике Татарстан',
+    'tatarstan republic': 'в Республике Татарстан',
+    'tuva': 'в Республике Тыва',
+    'tyva': 'в Республике Тыва',
+    'tyva republic': 'в Республике Тыва',
+    'tuva republic': 'в Республике Тыва',
+    'republic of tyva': 'в Республике Тыва',
+    'udmurtia': 'в Удмуртской Республике',
+    'udmurt republic': 'в Удмуртской Республике',
+    'republic of udmurtia': 'в Удмуртской Республике',
+    'udmurtia republic': 'в Удмуртской Республике',
+    'khakassia': 'в Республике Хакасия',
+    'republic of khakassia': 'в Республике Хакасия',
+    'khakassia republic': 'в Республике Хакасия',
+    'chechnya': 'в Чеченской Республике',
+    'chechen republic': 'в Чеченской Республике',
+    'republic of chechnya': 'в Чеченской Республике',
+    'chechnya republic': 'в Чеченской Республике',
+    'chuvashia': 'в Чувашской Республике',
+    'chuvash republic': 'в Чувашской Республике',
+    'republic of chuvashia': 'в Чувашской Республике',
+    'chuvashia republic': 'в Чувашской Республике',
+
+    // края
+    'altai krai': 'в Алтайском крае',
+    'altay krai': 'в Алтайском крае',
+    'altai kray': 'в Алтайском крае',
+    'zabaykalsky krai': 'в Забайкальском крае',
+    'zabaikalsky krai': 'в Забайкальском крае',
+    'zabaykalsky kray': 'в Забайкальском крае',
+    'transbaikal krai': 'в Забайкальском крае',
+    'kamchatka krai': 'в Камчатском крае',
+    'kamchatka kray': 'в Камчатском крае',
+    'kamchatka': 'в Камчатском крае',
     'krasnodar krai': 'в Краснодарском крае',
     'krasnodarskiy kray': 'в Краснодарском крае',
-    'stavropol krai': 'в Ставропольском крае',
-    'primorsky krai': 'в Приморском крае',
-    'khabarovsk krai': 'в Хабаровском крае',
-    'altai krai': 'в Алтайском крае',
-    'perm krai': 'в Пермском крае',
+    'krasnodar kray': 'в Краснодарском крае',
     'krasnoyarsk krai': 'в Красноярском крае',
-    'moscow oblast': 'в Московской области',
-    'leningrad oblast': 'в Ленинградской области',
-    'rostov oblast': 'в Ростовской области',
-    'sverdlovsk oblast': 'в Свердловской области'
-  };
+    'krasnoyarskiy kray': 'в Красноярском крае',
+    'krasnoyarsk kray': 'в Красноярском крае',
+    'perm krai': 'в Пермском крае',
+    'perm kray': 'в Пермском крае',
+    'primorsky krai': 'в Приморском крае',
+    'primorskiy kray': 'в Приморском крае',
+    'primorye': 'в Приморском крае',
+    'stavropol krai': 'в Ставропольском крае',
+    'stavropolskiy kray': 'в Ставропольском крае',
+    'stavropol kray': 'в Ставропольском крае',
+    'khabarovsk krai': 'в Хабаровском крае',
+    'khabarovskiy kray': 'в Хабаровском крае',
+    'khabarovsk kray': 'в Хабаровском крае',
 
-  // Именительный падеж для тех же регионов — нужен подписи «Ваш регион».
+    // области
+    'amur oblast': 'в Амурской области',
+    'amur region': 'в Амурской области',
+    'arkhangelsk oblast': 'в Архангельской области',
+    'arkhangelsk region': 'в Архангельской области',
+    'astrakhan oblast': 'в Астраханской области',
+    'astrakhan region': 'в Астраханской области',
+    'belgorod oblast': 'в Белгородской области',
+    'belgorod region': 'в Белгородской области',
+    'bryansk oblast': 'в Брянской области',
+    'bryansk region': 'в Брянской области',
+    'vladimir oblast': 'во Владимирской области',
+    'vladimir region': 'во Владимирской области',
+    'volgograd oblast': 'в Волгоградской области',
+    'volgograd region': 'в Волгоградской области',
+    'vologda oblast': 'в Вологодской области',
+    'vologda region': 'в Вологодской области',
+    'voronezh oblast': 'в Воронежской области',
+    'voronezh region': 'в Воронежской области',
+    'ivanovo oblast': 'в Ивановской области',
+    'ivanovo region': 'в Ивановской области',
+    'irkutsk oblast': 'в Иркутской области',
+    'irkutsk region': 'в Иркутской области',
+    'kaliningrad oblast': 'в Калининградской области',
+    'kaliningrad region': 'в Калининградской области',
+    'kaluga oblast': 'в Калужской области',
+    'kaluga region': 'в Калужской области',
+    'kemerovo oblast': 'в Кемеровской области',
+    'kemerovo region': 'в Кемеровской области',
+    'kuzbass': 'в Кемеровской области',
+    'kirov oblast': 'в Кировской области',
+    'kirov region': 'в Кировской области',
+    'kostroma oblast': 'в Костромской области',
+    'kostroma region': 'в Костромской области',
+    'kurgan oblast': 'в Курганской области',
+    'kurgan region': 'в Курганской области',
+    'kursk oblast': 'в Курской области',
+    'kursk region': 'в Курской области',
+    'leningrad oblast': 'в Ленинградской области',
+    'leningrad region': 'в Ленинградской области',
+    'lipetsk oblast': 'в Липецкой области',
+    'lipetsk region': 'в Липецкой области',
+    'magadan oblast': 'в Магаданской области',
+    'magadan region': 'в Магаданской области',
+    'moscow oblast': 'в Московской области',
+    'moscow region': 'в Московской области',
+    'murmansk oblast': 'в Мурманской области',
+    'murmansk region': 'в Мурманской области',
+    'nizhny novgorod oblast': 'в Нижегородской области',
+    'nizhny novgorod region': 'в Нижегородской области',
+    'novgorod oblast': 'в Новгородской области',
+    'novgorod region': 'в Новгородской области',
+    'novosibirsk oblast': 'в Новосибирской области',
+    'novosibirsk region': 'в Новосибирской области',
+    'omsk oblast': 'в Омской области',
+    'omsk region': 'в Омской области',
+    'orenburg oblast': 'в Оренбургской области',
+    'orenburg region': 'в Оренбургской области',
+    'oryol oblast': 'в Орловской области',
+    'oryol region': 'в Орловской области',
+    'orel oblast': 'в Орловской области',
+    'orel region': 'в Орловской области',
+    'penza oblast': 'в Пензенской области',
+    'penza region': 'в Пензенской области',
+    'pskov oblast': 'в Псковской области',
+    'pskov region': 'в Псковской области',
+    'rostov oblast': 'в Ростовской области',
+    'rostov region': 'в Ростовской области',
+    'ryazan oblast': 'в Рязанской области',
+    'ryazan region': 'в Рязанской области',
+    'samara oblast': 'в Самарской области',
+    'samara region': 'в Самарской области',
+    'saratov oblast': 'в Саратовской области',
+    'saratov region': 'в Саратовской области',
+    'sakhalin oblast': 'в Сахалинской области',
+    'sakhalin region': 'в Сахалинской области',
+    'sverdlovsk oblast': 'в Свердловской области',
+    'sverdlovsk region': 'в Свердловской области',
+    'smolensk oblast': 'в Смоленской области',
+    'smolensk region': 'в Смоленской области',
+    'tambov oblast': 'в Тамбовской области',
+    'tambov region': 'в Тамбовской области',
+    'tver oblast': 'в Тверской области',
+    'tver region': 'в Тверской области',
+    'tomsk oblast': 'в Томской области',
+    'tomsk region': 'в Томской области',
+    'tula oblast': 'в Тульской области',
+    'tula region': 'в Тульской области',
+    'tyumen oblast': 'в Тюменской области',
+    'tyumen region': 'в Тюменской области',
+    'ulyanovsk oblast': 'в Ульяновской области',
+    'ulyanovsk region': 'в Ульяновской области',
+    'chelyabinsk oblast': 'в Челябинской области',
+    'chelyabinsk region': 'в Челябинской области',
+    'yaroslavl oblast': 'в Ярославской области',
+    'yaroslavl region': 'в Ярославской области',
+
+    // города федерального значения
+    'moscow': 'в Москве',
+    'moscow city': 'в Москве',
+    'moskva': 'в Москве',
+    'saint petersburg': 'в Санкт-Петербурге',
+    'st petersburg': 'в Санкт-Петербурге',
+    'sankt-peterburg': 'в Санкт-Петербурге',
+    'sevastopol': 'в Севастополе',
+    'sevastopol city': 'в Севастополе',
+
+    // автономная область
+    'jewish autonomous oblast': 'в Еврейской автономной области',
+    'jewish autonomous region': 'в Еврейской автономной области',
+
+    // автономные округа
+    'nenets autonomous okrug': 'в Ненецком автономном округе',
+    'nenets autonomous area': 'в Ненецком автономном округе',
+    'nenets': 'в Ненецком автономном округе',
+    'khanty-mansi autonomous okrug': 'в Ханты-Мансийском автономном округе',
+    'khanty-mansiysk autonomous okrug': 'в Ханты-Мансийском автономном округе',
+    'khanty-mansi autonomous okrug - yugra': 'в Ханты-Мансийском автономном округе',
+    'yugra': 'в Ханты-Мансийском автономном округе',
+    'khanty-mansia': 'в Ханты-Мансийском автономном округе',
+    'chukotka autonomous okrug': 'в Чукотском автономном округе',
+    'chukotka': 'в Чукотском автономном округе',
+    'yamalo-nenets autonomous okrug': 'в Ямало-Ненецком автономном округе',
+    'yamalo-nenets': 'в Ямало-Ненецком автономном округе',
+    'yamal': 'в Ямало-Ненецком автономном округе'
+  };
+  // Те же субъекты в именительном падеже — для подписи «Ваш регион»
+  // и для поля geo_region в заявке.
   var ENG_REGIONS_NOM = {
+    // республики
+    'adygea': 'Республика Адыгея',
+    'adygeya': 'Республика Адыгея',
+    'republic of adygea': 'Республика Адыгея',
+    'adygea republic': 'Республика Адыгея',
+    'adygeya republic': 'Республика Адыгея',
+    'altai republic': 'Республика Алтай',
+    'republic of altai': 'Республика Алтай',
+    'gorno-altai republic': 'Республика Алтай',
+    'bashkortostan': 'Республика Башкортостан',
+    'republic of bashkortostan': 'Республика Башкортостан',
+    'bashkortostan republic': 'Республика Башкортостан',
+    'bashkiria': 'Республика Башкортостан',
+    'buryatia': 'Республика Бурятия',
+    'republic of buryatia': 'Республика Бурятия',
+    'buryatia republic': 'Республика Бурятия',
+    'buryat republic': 'Республика Бурятия',
+    'dagestan': 'Республика Дагестан',
+    'republic of dagestan': 'Республика Дагестан',
+    'dagestan republic': 'Республика Дагестан',
+    'ingushetia': 'Республика Ингушетия',
+    'republic of ingushetia': 'Республика Ингушетия',
+    'ingushetia republic': 'Республика Ингушетия',
+    'kabardino-balkaria': 'Кабардино-Балкарская Республика',
+    'kabardino-balkarian republic': 'Кабардино-Балкарская Республика',
+    'republic of kabardino-balkaria': 'Кабардино-Балкарская Республика',
+    'kalmykia': 'Республика Калмыкия',
+    'republic of kalmykia': 'Республика Калмыкия',
+    'kalmykia republic': 'Республика Калмыкия',
+    'karachay-cherkessia': 'Карачаево-Черкесская Республика',
+    'karachay-cherkess republic': 'Карачаево-Черкесская Республика',
+    'republic of karachay-cherkessia': 'Карачаево-Черкесская Республика',
+    'karelia': 'Республика Карелия',
+    'republic of karelia': 'Республика Карелия',
+    'karelia republic': 'Республика Карелия',
+    'komi': 'Республика Коми',
+    'komi republic': 'Республика Коми',
+    'republic of komi': 'Республика Коми',
+    'crimea': 'Республика Крым',
+    'republic of crimea': 'Республика Крым',
+    'crimea republic': 'Республика Крым',
+    'mari el': 'Республика Марий Эл',
+    'mari el republic': 'Республика Марий Эл',
+    'republic of mari el': 'Республика Марий Эл',
+    'mordovia': 'Республика Мордовия',
+    'republic of mordovia': 'Республика Мордовия',
+    'mordovia republic': 'Республика Мордовия',
+    'sakha': 'Республика Саха',
+    'sakha republic': 'Республика Саха',
+    'republic of sakha': 'Республика Саха',
+    'sakha (yakutia)': 'Республика Саха',
+    'sakha (yakutia) republic': 'Республика Саха',
+    'yakutia': 'Республика Саха',
+    'yakutia republic': 'Республика Саха',
+    'north ossetia': 'Республика Северная Осетия — Алания',
+    'north ossetia-alania': 'Республика Северная Осетия — Алания',
+    'republic of north ossetia-alania': 'Республика Северная Осетия — Алания',
+    'north ossetia — alania': 'Республика Северная Осетия — Алания',
+    'tatarstan': 'Республика Татарстан',
+    'republic of tatarstan': 'Республика Татарстан',
+    'tatarstan republic': 'Республика Татарстан',
+    'tuva': 'Республика Тыва',
+    'tyva': 'Республика Тыва',
+    'tyva republic': 'Республика Тыва',
+    'tuva republic': 'Республика Тыва',
+    'republic of tyva': 'Республика Тыва',
+    'udmurtia': 'Удмуртская Республика',
+    'udmurt republic': 'Удмуртская Республика',
+    'republic of udmurtia': 'Удмуртская Республика',
+    'udmurtia republic': 'Удмуртская Республика',
+    'khakassia': 'Республика Хакасия',
+    'republic of khakassia': 'Республика Хакасия',
+    'khakassia republic': 'Республика Хакасия',
+    'chechnya': 'Чеченская Республика',
+    'chechen republic': 'Чеченская Республика',
+    'republic of chechnya': 'Чеченская Республика',
+    'chechnya republic': 'Чеченская Республика',
+    'chuvashia': 'Чувашская Республика',
+    'chuvash republic': 'Чувашская Республика',
+    'republic of chuvashia': 'Чувашская Республика',
+    'chuvashia republic': 'Чувашская Республика',
+
+    // края
+    'altai krai': 'Алтайский край',
+    'altay krai': 'Алтайский край',
+    'altai kray': 'Алтайский край',
+    'zabaykalsky krai': 'Забайкальский край',
+    'zabaikalsky krai': 'Забайкальский край',
+    'zabaykalsky kray': 'Забайкальский край',
+    'transbaikal krai': 'Забайкальский край',
+    'kamchatka krai': 'Камчатский край',
+    'kamchatka kray': 'Камчатский край',
+    'kamchatka': 'Камчатский край',
     'krasnodar krai': 'Краснодарский край',
     'krasnodarskiy kray': 'Краснодарский край',
-    'stavropol krai': 'Ставропольский край',
-    'primorsky krai': 'Приморский край',
-    'khabarovsk krai': 'Хабаровский край',
-    'altai krai': 'Алтайский край',
-    'perm krai': 'Пермский край',
+    'krasnodar kray': 'Краснодарский край',
     'krasnoyarsk krai': 'Красноярский край',
-    'moscow oblast': 'Московская область',
+    'krasnoyarskiy kray': 'Красноярский край',
+    'krasnoyarsk kray': 'Красноярский край',
+    'perm krai': 'Пермский край',
+    'perm kray': 'Пермский край',
+    'primorsky krai': 'Приморский край',
+    'primorskiy kray': 'Приморский край',
+    'primorye': 'Приморский край',
+    'stavropol krai': 'Ставропольский край',
+    'stavropolskiy kray': 'Ставропольский край',
+    'stavropol kray': 'Ставропольский край',
+    'khabarovsk krai': 'Хабаровский край',
+    'khabarovskiy kray': 'Хабаровский край',
+    'khabarovsk kray': 'Хабаровский край',
+
+    // области
+    'amur oblast': 'Амурская область',
+    'amur region': 'Амурская область',
+    'arkhangelsk oblast': 'Архангельская область',
+    'arkhangelsk region': 'Архангельская область',
+    'astrakhan oblast': 'Астраханская область',
+    'astrakhan region': 'Астраханская область',
+    'belgorod oblast': 'Белгородская область',
+    'belgorod region': 'Белгородская область',
+    'bryansk oblast': 'Брянская область',
+    'bryansk region': 'Брянская область',
+    'vladimir oblast': 'Владимирская область',
+    'vladimir region': 'Владимирская область',
+    'volgograd oblast': 'Волгоградская область',
+    'volgograd region': 'Волгоградская область',
+    'vologda oblast': 'Вологодская область',
+    'vologda region': 'Вологодская область',
+    'voronezh oblast': 'Воронежская область',
+    'voronezh region': 'Воронежская область',
+    'ivanovo oblast': 'Ивановская область',
+    'ivanovo region': 'Ивановская область',
+    'irkutsk oblast': 'Иркутская область',
+    'irkutsk region': 'Иркутская область',
+    'kaliningrad oblast': 'Калининградская область',
+    'kaliningrad region': 'Калининградская область',
+    'kaluga oblast': 'Калужская область',
+    'kaluga region': 'Калужская область',
+    'kemerovo oblast': 'Кемеровская область',
+    'kemerovo region': 'Кемеровская область',
+    'kuzbass': 'Кемеровская область',
+    'kirov oblast': 'Кировская область',
+    'kirov region': 'Кировская область',
+    'kostroma oblast': 'Костромская область',
+    'kostroma region': 'Костромская область',
+    'kurgan oblast': 'Курганская область',
+    'kurgan region': 'Курганская область',
+    'kursk oblast': 'Курская область',
+    'kursk region': 'Курская область',
     'leningrad oblast': 'Ленинградская область',
+    'leningrad region': 'Ленинградская область',
+    'lipetsk oblast': 'Липецкая область',
+    'lipetsk region': 'Липецкая область',
+    'magadan oblast': 'Магаданская область',
+    'magadan region': 'Магаданская область',
+    'moscow oblast': 'Московская область',
+    'moscow region': 'Московская область',
+    'murmansk oblast': 'Мурманская область',
+    'murmansk region': 'Мурманская область',
+    'nizhny novgorod oblast': 'Нижегородская область',
+    'nizhny novgorod region': 'Нижегородская область',
+    'novgorod oblast': 'Новгородская область',
+    'novgorod region': 'Новгородская область',
+    'novosibirsk oblast': 'Новосибирская область',
+    'novosibirsk region': 'Новосибирская область',
+    'omsk oblast': 'Омская область',
+    'omsk region': 'Омская область',
+    'orenburg oblast': 'Оренбургская область',
+    'orenburg region': 'Оренбургская область',
+    'oryol oblast': 'Орловская область',
+    'oryol region': 'Орловская область',
+    'orel oblast': 'Орловская область',
+    'orel region': 'Орловская область',
+    'penza oblast': 'Пензенская область',
+    'penza region': 'Пензенская область',
+    'pskov oblast': 'Псковская область',
+    'pskov region': 'Псковская область',
     'rostov oblast': 'Ростовская область',
-    'sverdlovsk oblast': 'Свердловская область'
+    'rostov region': 'Ростовская область',
+    'ryazan oblast': 'Рязанская область',
+    'ryazan region': 'Рязанская область',
+    'samara oblast': 'Самарская область',
+    'samara region': 'Самарская область',
+    'saratov oblast': 'Саратовская область',
+    'saratov region': 'Саратовская область',
+    'sakhalin oblast': 'Сахалинская область',
+    'sakhalin region': 'Сахалинская область',
+    'sverdlovsk oblast': 'Свердловская область',
+    'sverdlovsk region': 'Свердловская область',
+    'smolensk oblast': 'Смоленская область',
+    'smolensk region': 'Смоленская область',
+    'tambov oblast': 'Тамбовская область',
+    'tambov region': 'Тамбовская область',
+    'tver oblast': 'Тверская область',
+    'tver region': 'Тверская область',
+    'tomsk oblast': 'Томская область',
+    'tomsk region': 'Томская область',
+    'tula oblast': 'Тульская область',
+    'tula region': 'Тульская область',
+    'tyumen oblast': 'Тюменская область',
+    'tyumen region': 'Тюменская область',
+    'ulyanovsk oblast': 'Ульяновская область',
+    'ulyanovsk region': 'Ульяновская область',
+    'chelyabinsk oblast': 'Челябинская область',
+    'chelyabinsk region': 'Челябинская область',
+    'yaroslavl oblast': 'Ярославская область',
+    'yaroslavl region': 'Ярославская область',
+
+    // города федерального значения
+    'moscow': 'Москва',
+    'moscow city': 'Москва',
+    'moskva': 'Москва',
+    'saint petersburg': 'Санкт-Петербург',
+    'st petersburg': 'Санкт-Петербург',
+    'sankt-peterburg': 'Санкт-Петербург',
+    'sevastopol': 'Севастополь',
+    'sevastopol city': 'Севастополь',
+
+    // автономная область
+    'jewish autonomous oblast': 'Еврейская автономная область',
+    'jewish autonomous region': 'Еврейская автономная область',
+
+    // автономные округа
+    'nenets autonomous okrug': 'Ненецкий автономный округ',
+    'nenets autonomous area': 'Ненецкий автономный округ',
+    'nenets': 'Ненецкий автономный округ',
+    'khanty-mansi autonomous okrug': 'Ханты-Мансийский автономный округ',
+    'khanty-mansiysk autonomous okrug': 'Ханты-Мансийский автономный округ',
+    'khanty-mansi autonomous okrug - yugra': 'Ханты-Мансийский автономный округ',
+    'yugra': 'Ханты-Мансийский автономный округ',
+    'khanty-mansia': 'Ханты-Мансийский автономный округ',
+    'chukotka autonomous okrug': 'Чукотский автономный округ',
+    'chukotka': 'Чукотский автономный округ',
+    'yamalo-nenets autonomous okrug': 'Ямало-Ненецкий автономный округ',
+    'yamalo-nenets': 'Ямало-Ненецкий автономный округ',
+    'yamal': 'Ямало-Ненецкий автономный округ'
   };
 
   var CYRILLIC = /[а-яё]/i;
@@ -221,10 +672,21 @@
 
     if (ENG_REGIONS[s]) return ENG_REGIONS[s];
 
+    // «Республика Марий Эл» -> «в Республике Марий Эл» (titleCase, а не
+    // capitalize: иначе второе слово останется строчным).
     var rep = s.match(/^республика\s+(.+)$/);
-    if (rep) return 'в Республике ' + capitalize(rep[1]);
+    if (rep) return 'в Республике ' + titleCase(rep[1]);
+
+    // Прилагательные республики склоняются иначе: «Чувашская Республика»
+    // -> «в Чувашской Республике», а не «в Республике Чувашская».
+    rep = s.match(/^(.+(?:ская|цкая|ная|няя))\s+республика$/);
+    if (rep) {
+      var adjRep = titleCase(declineAdj(rep[1]));
+      return prep(adjRep) + adjRep + ' Республике';
+    }
+
     rep = s.match(/^(.+)\s+республика$/);
-    if (rep) return 'в Республике ' + capitalize(rep[1]);
+    if (rep) return 'в Республике ' + titleCase(rep[1]);
 
     var m = s.match(/^(.+?)\s+(край|область|автономный округ|автономная область)$/);
     if (!m) return null;
@@ -232,51 +694,68 @@
     var adj = m[1];
     var type = m[2];
 
-    function declineAdj(word) {
-      return word.split('-').map(function (part) {
-        if (/ский$|ный$|ний$|цкий$|ой$/.test(part)) {
-          return part.replace(/(ский|цкий|ный|ний|ой)$/, function (x) {
-            return { 'ский': 'ском', 'цкий': 'цком', 'ный': 'ном',
-                     'ний': 'нем', 'ой': 'ом' }[x];
-          });
-        }
-        if (/ская$|ная$|няя$|цкая$/.test(part)) {
-          return part.replace(/(ская|цкая|ная|няя)$/, function (x) {
-            return { 'ская': 'ской', 'цкая': 'цкой',
-                     'ная': 'ной', 'няя': 'ней' }[x];
-          });
-        }
-        return part;
-      }).join('-');
-    }
+    return buildRegion(adj, type);
+  }
 
-    if (type === 'край') {
-      return 'в ' + titleCase(declineAdj(adj)) + ' крае';
-    }
-    if (type === 'область') {
-      return 'в ' + titleCase(declineAdj(adj)) + ' области';
-    }
-    if (type === 'автономный округ') {
-      return 'в ' + titleCase(declineAdj(adj)) + ' автономном округе';
-    }
-    if (type === 'автономная область') {
-      return 'в ' + titleCase(declineAdj(adj)) + ' автономной области';
-    }
-    return null;
+  // Склонение прилагательного в предложный падеж, по каждой части через дефис.
+  function declineAdj(word) {
+    return word.split('-').map(function (part) {
+      if (/ский$|ный$|ний$|цкий$|ой$/.test(part)) {
+        return part.replace(/(ский|цкий|ный|ний|ой)$/, function (x) {
+          return { 'ский': 'ском', 'цкий': 'цком', 'ный': 'ном',
+                   'ний': 'нем', 'ой': 'ом' }[x];
+        });
+      }
+      if (/ская$|ная$|няя$|цкая$/.test(part)) {
+        return part.replace(/(ская|цкая|ная|няя)$/, function (x) {
+          return { 'ская': 'ской', 'цкая': 'цкой',
+                   'ная': 'ной', 'няя': 'ней' }[x];
+        });
+      }
+      return part;
+    }).join('-');
+  }
+
+  var REGION_TAIL = {
+    'край': ' крае',
+    'область': ' области',
+    'автономный округ': ' автономном округе',
+    'автономная область': ' автономной области'
+  };
+
+  // «во Владимирской области», но «в Волгоградской»: предлог «во» ставится
+  // перед в/ф, за которыми идёт согласная.
+  function prep(word) {
+    return /^[вф][^аеиоуыэюя]/i.test(word) ? 'во ' : 'в ';
+  }
+
+  function buildRegion(adj, type) {
+    var tail = REGION_TAIL[type];
+    if (!tail) return null;
+    var declined = titleCase(declineAdj(adj));
+    return prep(declined) + declined + tail;
   }
 
   function toPrepositional(rawName) {
     if (!rawName) return null;
 
     var key = normalize(rawName);
+
+    // 1. Полное совпадение со словарём регионов — строго раньше городов,
+    //    иначе «Tula Oblast» выродится в город Тулу.
+    if (ENG_REGIONS[key]) return ENG_REGIONS[key];
+
+    // 2. Словарь городов.
     if (FORMS[key]) return FORMS[key];
 
     var stripped = key.replace(/^(город|г|city of|gorod)\s+/, '');
     if (FORMS[stripped]) return FORMS[stripped];
 
+    // 3. Правило склонения — для русских названий от sypexgeo.
     var region = regionToPrepositional(key);
     if (region) return region;
 
+    // Последний фолбэк: отрезать английский суффикс и попробовать как город.
     var eng = key.replace(/\s+(oblast|krai|kray|region|okrug|republic)$/, '');
     if (eng !== key && FORMS[eng]) return FORMS[eng];
 
