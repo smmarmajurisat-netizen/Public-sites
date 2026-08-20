@@ -289,9 +289,17 @@
     if (!phrase) return null;
 
     var raw = String(rawName).trim();
-    var readable = CYRILLIC.test(raw)
-      ? raw                                       // провайдер уже отдал русское название
-      : (NOMINATIVE[phrase] || phrase.replace(/^в[ео]?\s+/i, ''));
+    var readable;
+    if (CYRILLIC.test(raw)) {
+      // Провайдер уже отдал русское название. Если оно пришло целиком
+      // в нижнем или верхнем регистре, берём форму из словаря, а для
+      // регионов вне словаря поднимаем первую букву: под подписью
+      // «Ваш регион» строчное «москва» выглядит ошибкой.
+      var oddCase = (raw === raw.toLowerCase() || raw === raw.toUpperCase());
+      readable = oddCase ? (NOMINATIVE[phrase] || capitalize(raw.toLowerCase())) : raw;
+    } else {
+      readable = NOMINATIVE[phrase] || phrase.replace(/^в[ео]?\s+/i, '');
+    }
 
     return { phrase: phrase, readable: readable, push: true };
   }
