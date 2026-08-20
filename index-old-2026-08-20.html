@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Юридическая компания «Арма»</title>
+<meta name="description" content="Юридическая компания «Арма» — правовая и методическая помощь в образовании. Работаем по всей России.">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="/favicon-192.png" sizes="192x192">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<style>
+:root{
+  --ground:#eef1f4; --surface:#ffffff; --surface-2:#f6f9fa;
+  --ink:#0f1e28; --ink-2:#42555f; --ink-3:#6d7f89;
+  --line:#d9e0e5; --line-strong:#c2ccd3;
+  --accent:#0e5f6b; --accent-soft:#e1eff1; --accent-ink:#0a4a54; --on-accent:#ffffff;
+  --shadow:0 1px 2px rgba(15,30,40,.06), 0 8px 24px -16px rgba(15,30,40,.25);
+  --shadow-lift:0 2px 4px rgba(15,30,40,.08), 0 18px 40px -22px rgba(15,30,40,.45);
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --r:12px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0b1317; --surface:#131f25; --surface-2:#18262d;
+    --ink:#e8eff2; --ink-2:#a8b9c1; --ink-3:#7e9099;
+    --line:#25353d; --line-strong:#34484f;
+    --accent:#5cc0cc; --accent-soft:#122e33; --accent-ink:#93dee6; --on-accent:#06181c;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.8);
+    --shadow-lift:0 2px 6px rgba(0,0,0,.5), 0 18px 40px -22px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0b1317; --surface:#131f25; --surface-2:#18262d;
+  --ink:#e8eff2; --ink-2:#a8b9c1; --ink-3:#7e9099;
+  --line:#25353d; --line-strong:#34484f;
+  --accent:#5cc0cc; --accent-soft:#122e33; --accent-ink:#93dee6; --on-accent:#06181c;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.8);
+  --shadow-lift:0 2px 6px rgba(0,0,0,.5), 0 18px 40px -22px rgba(0,0,0,.9);
+}
+:root[data-theme="light"]{
+  --ground:#eef1f4; --surface:#ffffff; --surface-2:#f6f9fa;
+  --ink:#0f1e28; --ink-2:#42555f; --ink-3:#6d7f89;
+  --line:#d9e0e5; --line-strong:#c2ccd3;
+  --accent:#0e5f6b; --accent-soft:#e1eff1; --accent-ink:#0a4a54; --on-accent:#ffffff;
+  --shadow:0 1px 2px rgba(15,30,40,.06), 0 8px 24px -16px rgba(15,30,40,.25);
+  --shadow-lift:0 2px 4px rgba(15,30,40,.08), 0 18px 40px -22px rgba(15,30,40,.45);
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--ground); color:var(--ink);
+  font-family:var(--sans); font-size:16px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+  display:flex; align-items:center; justify-content:center;
+  padding:40px 20px;
+}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--accent); outline-offset:3px; border-radius:6px}
+
+.card{
+  width:100%; max-width:600px;
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--r);
+  box-shadow:var(--shadow); padding:44px 44px 30px;
+}
+
+/* ---------- шапка ---------- */
+.head{text-align:center; padding-bottom:26px; border-bottom:1px solid var(--line)}
+.eyebrow{
+  font-size:11px; letter-spacing:.22em; text-transform:uppercase;
+  color:var(--accent); font-weight:700; margin:0 0 12px;
+}
+.head h1{
+  font-family:var(--serif); font-weight:600; font-size:52px; line-height:1;
+  letter-spacing:-.02em; margin:0 0 12px;
+}
+.tagline{
+  margin:0; color:var(--ink-2); font-size:16.5px; line-height:1.4;
+  text-wrap:balance;
+}
+
+/* ---------- о компании ---------- */
+.lead{
+  margin:26px 0 30px; color:var(--ink-2); font-size:15.5px; line-height:1.62;
+  text-align:center; text-wrap:pretty;
+}
+
+/* ---------- контакты ---------- */
+.contacts{
+  background:var(--surface-2); border:1px solid var(--line); border-radius:var(--r);
+  padding:24px 24px 20px; text-align:center;
+}
+.contacts h2{
+  margin:0 0 16px; font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--ink-3); font-weight:700;
+}
+.phone{
+  display:inline-block; font-family:var(--serif); font-size:29px; font-weight:600;
+  letter-spacing:-.01em; text-decoration:none; color:var(--ink);
+  transition:color .14s;
+}
+.phone:hover{color:var(--accent)}
+.phone-note{margin:5px 0 0; font-size:12.5px; color:var(--ink-3)}
+
+.links{
+  list-style:none; margin:18px 0 0; padding:0;
+  display:flex; flex-wrap:wrap; justify-content:center; gap:9px;
+}
+.links a{
+  display:block; padding:8px 15px; font-size:14px; font-weight:600;
+  text-decoration:none; color:var(--accent-ink);
+  background:var(--accent-soft); border-radius:99px;
+  transition:box-shadow .14s;
+}
+.links a:hover{box-shadow:inset 0 0 0 1px var(--accent)}
+
+.meta{
+  margin:20px 0 0; padding:16px 0 0; border-top:1px solid var(--line);
+  display:flex; flex-wrap:wrap; justify-content:center; gap:8px 30px;
+  font-size:13.5px;
+}
+.meta div{max-width:100%}
+.meta dt{
+  font-size:10.5px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--ink-3); font-weight:700; margin-bottom:2px;
+}
+.meta dd{margin:0; color:var(--ink-2)}
+
+/* ---------- переход на основной сайт ---------- */
+.cta{
+  display:flex; align-items:center; justify-content:center; gap:9px;
+  text-align:center;
+  margin:26px 0 0; padding:15px 22px;
+  background:var(--accent); color:var(--on-accent);
+  font-size:16px; font-weight:650; text-decoration:none;
+  border-radius:var(--r); box-shadow:var(--shadow);
+  transition:box-shadow .14s, transform .14s;
+}
+.cta:hover{box-shadow:var(--shadow-lift); transform:translateY(-1px)}
+.cta .arrow{transition:transform .14s}
+.cta:hover .arrow{transform:translateX(3px)}
+.cta-note{
+  margin:10px 0 0; text-align:center; font-size:12.5px; color:var(--ink-3);
+  text-wrap:pretty;
+}
+
+/* ---------- подвал ---------- */
+.foot{
+  margin-top:28px; padding-top:18px; border-top:1px solid var(--line);
+  text-align:center; font-size:12.5px; color:var(--ink-3);
+}
+
+@media (prefers-reduced-motion: reduce){
+  .cta,.cta .arrow,.phone,.links a{transition:none}
+  .cta:hover{transform:none}
+  .cta:hover .arrow{transform:none}
+}
+
+@media (max-width:560px){
+  body{padding:22px 14px}
+  .card{padding:30px 22px 22px; border-radius:10px}
+  .head h1{font-size:40px}
+  .tagline{font-size:15.5px}
+  .lead{margin:22px 0 24px; font-size:15px; text-align:left}
+  .contacts{padding:20px 16px 18px}
+  .phone{font-size:25px}
+  .cta{font-size:15px; padding:14px 16px}
+  .meta{gap:14px; flex-direction:column}
+}
+</style>
+</head>
+<body>
+
+<main class="card">
+
+  <header class="head">
+    <p class="eyebrow">Юридическая компания</p>
+    <h1>Арма</h1>
+    <p class="tagline">Правовая и методическая помощь в образовании</p>
+  </header>
+
+  <p class="lead">Помогаем образовательным организациям получать лицензии
+     и выстраивать работу так, чтобы она выдерживала проверку надзорных
+     органов. Берём на себя документы, программы и переписку с ведомствами.
+     Работаем по всей России.</p>
+
+  <section class="contacts" aria-labelledby="contacts-title">
+    <h2 id="contacts-title">Контакты</h2>
+
+    <a class="phone" href="tel:+78003013699">8 800 301-36-99</a>
+    <p class="phone-note">Звонок по России бесплатный</p>
+
+    <ul class="links">
+      <li><a href="https://wa.me/79689845229">WhatsApp</a></li>
+      <li><a href="https://t.me/+79689845229">Telegram</a></li>
+      <li><a href="mailto:sale@arma-jurist.ru">sale@arma-jurist.ru</a></li>
+    </ul>
+
+    <dl class="meta">
+      <div>
+        <dt>Офис</dt>
+        <dd>Москва, Калашный переулок, 3, офис 10</dd>
+      </div>
+      <div>
+        <dt>Часы работы</dt>
+        <dd>Пн–Пт, 10:00–19:00</dd>
+      </div>
+    </dl>
+  </section>
+
+  <a class="cta" href="https://arma-jurist.ru/">
+    Перейти на основной сайт<span class="arrow">→</span>
+  </a>
+  <p class="cta-note">arma-jurist.ru — услуги, портфолио и полная информация о компании</p>
+
+  <footer class="foot">© Арма</footer>
+
+</main>
+
+</body>
+</html>
