@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Типовая или нет — справочник программ ДПО</title>
+<style>
+:root{
+  --ink:#12151A;--paper:#FAFAF7;--panel:#FFF;--rule:#DEDCD5;--rule2:#BFBCB2;
+  --muted:#6B6F73;--steel:#1D3E63;--steel-soft:#EDF1F6;
+  --stop:#A4231C;--stop-soft:#FBEDEC;--go:#1D6B4B;--go-soft:#EBF4EF;
+  --warn:#8A5A12;--warn-soft:#FBF3E4;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --serif:Georgia,"Times New Roman",serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1200px;margin:0 auto;padding:24px 20px 80px}
+
+.masthead{border-bottom:2px solid var(--ink);padding-bottom:12px;margin-bottom:20px}
+.masthead h1{font-family:var(--serif);font-size:27px;font-weight:400;margin:0 0 4px;letter-spacing:-.01em}
+.masthead .sub{color:var(--muted);font-size:13px;max-width:70ch}
+.stamp{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:9px;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.stamp b{color:var(--ink);font-weight:600}
+
+/* ---- ПОИСК ---- */
+.searchzone{position:relative;margin-bottom:22px}
+.searchbox{position:relative}
+.searchbox input{
+  width:100%;font:inherit;font-size:18px;padding:15px 16px 15px 46px;
+  border:2px solid var(--ink);background:#fff;font-family:var(--sans);
+}
+.searchbox input:focus{outline:none;border-color:var(--steel);box-shadow:0 0 0 3px var(--steel-soft)}
+.searchbox .ico{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:18px;pointer-events:none}
+.searchhint{font-size:12px;color:var(--muted);margin-top:6px}
+
+.ac{
+  position:absolute;z-index:40;left:0;right:0;top:100%;margin-top:-1px;
+  background:#fff;border:2px solid var(--steel);border-top:0;max-height:440px;overflow:auto;
+  box-shadow:0 12px 28px rgba(18,21,26,.12);
+}
+.ac[hidden]{display:none}
+.ac .grp{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:9px 14px 5px;background:#F6F6F2;border-bottom:1px solid var(--rule)}
+.ac .it{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--rule);background:#fff;padding:10px 14px;cursor:pointer;font:inherit}
+.ac .it:last-child{border-bottom:0}
+.ac .it:hover,.ac .it.cur{background:var(--steel-soft)}
+.ac .it .t{font-size:14px;line-height:1.35;display:block}
+.ac .it .t mark{background:#FFF0A8;color:inherit;padding:0 1px}
+.ac .it .m{font-size:11.5px;color:var(--muted);margin-top:3px;display:block}
+.ac .badge{display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;padding:2px 5px;margin-right:6px;vertical-align:1px}
+.b-typ{background:var(--stop);color:#fff}
+.b-prim{background:var(--warn);color:#fff}
+.b-free{background:var(--go);color:#fff}
+.b-ext{background:var(--steel);color:#fff}
+.ac .none{padding:16px 14px;font-size:13.5px;color:var(--muted)}
+.ac .none b{display:block;color:var(--ink);margin-bottom:4px}
+.ac .none button{margin-top:9px;font:inherit;font-size:13px;border:1px solid var(--ink);background:#fff;padding:7px 11px;cursor:pointer}
+
+/* ---- ДЕРЕВО ---- */
+.cols{display:grid;grid-template-columns:352px 1fr;gap:22px;align-items:start}
+.tree{border:1px solid var(--rule);background:var(--panel);max-height:78vh;overflow:auto}
+.tree-h{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:10px 13px;border-bottom:1px solid var(--rule);background:#F6F6F2;position:sticky;top:0}
+.dir{border-bottom:1px solid var(--rule)}
+.dir:last-child{border-bottom:0}
+.dir>button{display:block;width:100%;text-align:left;border:0;background:#fff;padding:10px 13px;cursor:pointer;font:inherit}
+.dir>button:hover{background:#F6F6F2}
+.dir.open>button{background:var(--ink);color:#fff}
+.dir.open>button .dcode{color:#fff;opacity:.7}
+.dir.open>button .dn{color:#D8D8D2}
+.dcode{font-family:var(--mono);font-size:10px;letter-spacing:.07em;color:var(--steel);display:block;margin-bottom:2px}
+.dname{font-size:13.5px;line-height:1.3;display:block}
+.dn{font-size:11.5px;color:var(--muted);display:block;margin-top:2px}
+.dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--stop);margin-right:5px;vertical-align:middle}
+.dir.open>button .dot{background:#fff}
+.groups{display:none;background:#FCFCFA;border-top:1px solid var(--rule)}
+.dir.open .groups{display:block}
+.grp-h{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:8px 13px 4px}
+.prow{display:block;width:100%;text-align:left;border:0;background:transparent;padding:7px 13px 7px 22px;cursor:pointer;font:inherit;font-size:13px;line-height:1.35;border-left:3px solid transparent}
+.prow:hover{background:var(--steel-soft)}
+.prow.sel{background:var(--steel-soft);border-left-color:var(--steel);font-weight:600}
+.prow .k{font-family:var(--mono);font-size:9.5px;color:var(--muted);border:1px solid var(--rule2);padding:1px 4px;margin-right:6px}
+
+/* ---- КАРТОЧКА ---- */
+.card{border:1px solid var(--ink);background:var(--panel)}
+.answer{padding:18px 22px;border-bottom:1px solid var(--rule)}
+.answer .verdict{font-family:var(--serif);font-size:26px;line-height:1.2;margin-bottom:8px}
+.answer .vsub{font-size:14px;color:var(--muted)}
+.a-typ{background:var(--stop-soft);border-left:5px solid var(--stop)}
+.a-typ .verdict{color:var(--stop)}
+.a-prim{background:var(--warn-soft);border-left:5px solid var(--warn)}
+.a-prim .verdict{color:var(--warn)}
+.a-free{background:var(--go-soft);border-left:5px solid var(--go)}
+.a-free .verdict{color:var(--go)}
+.a-ext{background:var(--steel-soft);border-left:5px solid var(--steel)}
+.a-ext .verdict{color:var(--steel)}
+
+.pname{padding:15px 22px;border-bottom:1px solid var(--rule)}
+.crumbs{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--steel);margin-bottom:6px}
+.pname .n{font-size:17px;line-height:1.3}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:0;border-bottom:1px solid var(--rule)}
+.fact{padding:11px 22px;border-right:1px solid var(--rule)}
+.fact:last-child{border-right:0}
+.fact .l{font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.fact .v{font-size:13.5px;line-height:1.35}
+.alert{padding:11px 22px;border-bottom:1px solid var(--rule);background:var(--warn-soft);font-size:13px}
+.alert.crit{background:var(--stop-soft)}
+.alert b{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--warn);display:block;margin-bottom:3px}
+.alert.crit b{color:var(--stop)}
+
+.body{padding:18px 22px 22px}
+.blk{margin-bottom:19px}
+.blk:last-child{margin-bottom:0}
+.blk h3{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:0 0 8px;padding-bottom:5px;border-bottom:1px solid var(--rule)}
+.blk p{margin:0 0 8px;font-size:14px}
+.blk ul{margin:0;padding-left:18px}
+.blk li{margin-bottom:5px;font-size:14px}
+.flag li::marker{color:var(--stop)}
+.ask li::marker{color:var(--steel)}
+.req{border:1px solid var(--rule);background:#FCFCFA}
+.req .r{display:grid;grid-template-columns:150px 1fr;gap:14px;padding:11px 14px;border-bottom:1px solid var(--rule)}
+.req .r:last-child{border-bottom:0}
+.req .rl{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding-top:2px}
+.req .rv{font-size:13.5px;line-height:1.45}
+.req .src{display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;padding:2px 6px;margin-top:6px;border:1px solid var(--rule2);color:var(--muted)}
+.req .src.check{border-color:#D9C9A0;background:var(--warn-soft);color:var(--warn)}
+@media (max-width:640px){.req .r{grid-template-columns:1fr;gap:4px}}
+.sib{display:flex;flex-wrap:wrap;gap:6px}
+.sib button{font:inherit;font-size:12.5px;border:1px solid var(--rule2);background:#fff;padding:6px 10px;cursor:pointer;text-align:left}
+.sib button:hover{border-color:var(--steel);background:var(--steel-soft)}
+
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;padding-top:15px;border-top:1px solid var(--rule)}
+.btn{font:inherit;font-size:13px;border:1px solid var(--ink);background:#fff;color:var(--ink);padding:9px 14px;cursor:pointer;text-decoration:none;display:inline-block}
+.btn:hover{background:var(--ink);color:#fff}
+.btn.primary{background:var(--ink);color:#fff}
+.btn.primary:hover{background:var(--steel);border-color:var(--steel)}
+.btn:focus-visible,.prow:focus-visible,.dir>button:focus-visible,.ac .it:focus-visible{outline:2px solid var(--steel);outline-offset:2px}
+.ok{font-size:12.5px;color:var(--go);align-self:center}
+.meta{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:13px;letter-spacing:.04em}
+
+.foot{margin-top:24px;padding-top:13px;border-top:1px solid var(--rule);font-size:11.5px;color:var(--muted);line-height:1.55}
+.foot .w{background:var(--stop-soft);border:1px solid #E9CFCD;padding:9px 11px;margin-top:9px;font-size:12px}
+.foot .w b{color:var(--stop)}
+
+@media (max-width:920px){
+  .cols{grid-template-columns:1fr}
+  .tree{max-height:340px}
+  .masthead h1{font-size:22px}
+  .searchbox input{font-size:16px;padding-left:42px}
+  .fact{border-right:0;border-bottom:1px solid var(--rule)}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="masthead">
+  <h1>Типовая или нет</h1>
+  <div class="sub">Справочник программ ДПО для отдела продаж. Начните вводить тему, которую называет клиент, — подсказки появятся с первых букв. Или спуститесь по дереву: направление, поднаправление, программа.</div>
+  <div class="stamp">
+    <span>Источник: <b>КонсультантПлюс, разд. III</b></span>
+    <span>Сверено: <b>21.08.2026</b></span>
+    <span>Программ: <b id="cnt">—</b></span>
+    <span>Направлений: <b id="dcnt">—</b></span>
+    <span>Статус: <b>проект, не утверждён юристом</b></span>
+  </div>
+</header>
+
+<div class="searchzone">
+  <div class="searchbox">
+    <span class="ico">⌕</span>
+    <input type="text" id="q" autocomplete="off" spellcheck="false"
+      placeholder="Охрана, пожарн, отход, стоматол, коррупц, кадастр, промышленн…"
+      aria-label="Поиск программы" role="combobox" aria-expanded="false" aria-controls="ac">
+  </div>
+  <div class="ac" id="ac" hidden role="listbox"></div>
+  <div class="searchhint">Стрелки ↑ ↓ — выбор, Enter — открыть, Esc — закрыть. Ищет по названию программы, направлению и номеру приказа.</div>
+</div>
+
+<div class="cols">
+  <nav class="tree" id="tree" aria-label="Направления и программы"></nav>
+  <main id="card" aria-live="polite"></main>
+</div>
+
+<div class="foot">
+  Перечень направлений, наименования программ и реквизиты приказов — из справочного материала КонсультантПлюс «Федеральные образовательные программы, федеральные государственные образовательные стандарты, дополнительные профессиональные программы», раздел III, по состоянию на 21.08.2026. Блоки «Что это значит», «Красные флаги», «Спросить у клиента», «Что предлагаем» и подвиды лицензии — интерпретация АРМА, в источнике их нет.
+  <div class="w"><b>До передачи менеджерам:</b> профильный юрист проверяет интерпретационные блоки и подтверждает подвиды лицензии. Справочник не является правовым заключением.</div>
+</div>
+
+</div>
+
+<script>
+/* =====================================================================
+   БЛОК ДАННЫХ — НАЧАЛО.  Правит юрист, разработчик не нужен.
+   Даты только "ГГГГ-ММ-ДД". Внутри текста кавычки только « ».
+   ===================================================================== */
+const SVERKA="2026-08-21", GORIZONT=180;
+
+const DIRECTIONS=[
+{
+ code:"Н-01",name:"Транспортная безопасность",reg:"Минтранс России",status:"typ",
+ subtypes:"ДПО — повышение квалификации",
+ kw:"транспорт аэропорт вокзал метро порт объект транспортной инфраструктуры досмотр",
+ meaning:"Четыре типовые программы одним приказом. Организация разрабатывает свою программу в соответствии с типовой: содержание и часы заданы, методическая работа — адаптация.",
+ flags:["Клиент хочет своё содержание и свои часы — нельзя.","Аттестация сил обеспечения транспортной безопасности в лицензирование не входит. Не обещать.","Приказ ограничен по сроку: при наборе на 2027 год предупредить о смене нормативной базы."],
+ ask:["Кого обучаете: ответственных в субъекте ТИ, на объекте ТИ, руководящих работами или группу быстрого реагирования?","Есть ли у слушателей СПО или ВО?","Дистант или нужна очная часть?"],
+ offer:"Стандартное лицензирование ДПО. Методическая часть дешевле обычной. В договоре зафиксировать, что содержание определяется приказом Минтранса.",
+ acts:[{t:"Приказ Минтранса России от 29.12.2020 № 578",until:"2027-01-29"}],
+ url:"https://www.consultant.ru/document/cons_doc_LAW_142304/389a80e6aceadb2287e6e3d3ebe1f58c4798a0cc/",
+ req:{form:{t:"Полный дистант, как правило, не подходит: программы предполагают практическую отработку действий при выявлении угроз. Рабочий вариант — смешанная форма.",c:"check"},prac:{t:"Практические занятия по отработке действий. Выезд на объект транспортной инфраструктуры обычно не требуется, но нужны условия для отработки.",c:"check"},ped:{t:"Как правило преподаватели с опытом работы в сфере транспортной безопасности или в подразделениях транспортной безопасности.",c:"check"}},
+ groups:[{g:"Силы обеспечения транспортной безопасности",p:[
+  {k:"ПК",t:"Работники, ответственные за обеспечение транспортной безопасности в субъекте транспортной инфраструктуры",a:"Приказ Минтранса России от 29.12.2020 № 578"},
+  {k:"ПК",t:"Работники, ответственные за обеспечение транспортной безопасности на объекте ТИ и (или) транспортном средстве, и персонал специализированных организаций",a:"Приказ Минтранса России от 29.12.2020 № 578"},
+  {k:"ПК",t:"Работники субъекта ТИ и подразделения транспортной безопасности, руководящие выполнением работ",a:"Приказ Минтранса России от 29.12.2020 № 578"},
+  {k:"ПК",t:"Работники, включённые в состав группы быстрого реагирования",a:"Приказ Минтранса России от 29.12.2020 № 578"}]}]
+},
+{
+ code:"Н-02",name:"Организация дорожного движения",reg:"Минтранс России",status:"typ",
+ subtypes:"ДПО — повышение квалификации, профессиональная переподготовка",
+ kw:"одд ксодм проект организации дорожного движения светофор транспортное планирование цодд дорожное хозяйство моделирование",
+ meaning:"Двенадцать типовых программ парами (переподготовка плюс повышение квалификации) по шести направлениям. Нормативка свежая, 2025 год — конкурентов с готовыми программами мало.",
+ flags:["Шесть направлений: несколько сразу означают кратный рост методической работы и должны отражаться в тарифе.","В зоне и переподготовка, и повышение квалификации — оба ДПО, но требования к объёму часов разные.","Заказчик часто бюджетный: ЦОДД и подрядчики дорожного хозяйства. Значит закупки, значит лицензия нужна к дате подачи заявки."],
+ ask:["По каким направлениям обучаете: проекты ОДД, моделирование, комплексные схемы, мониторинг, контроль, технические средства?","Нужна переподготовка, повышение квалификации или оба?","Планируете участие в закупках? От этого зависит срочность."],
+ offer:"Перспективная малоконкурентная зона. Все двенадцать программ обязательны — аргумент против экономии на методисте. Срок считать от даты закупки клиента.",
+ acts:[{t:"Приказ Минтранса России от 21.05.2025 № 165",n:"Двенадцать типовых ДПП по шести направлениям"}],
+ url:"https://www.consultant.ru/document/cons_doc_LAW_142304/e93cbc6259679c34b20908e515912b1d0004ae18/",
+ req:{form:{t:"Дистант возможен, если у слушателей есть доступ к специализированному программному обеспечению. Часть практикумов удобнее вести очно.",c:"check"},prac:{t:"Практические работы по разработке проектов и транспортных моделей. Может потребоваться лицензионное ПО для моделирования — это статья расходов клиента.",c:"check"},ped:{t:"Специалисты с практическим опытом разработки проектов ОДД и комплексных схем, инженеры-транспортники.",c:"check"}},
+ groups:[
+  {g:"Проекты организации дорожного движения",p:[
+   {k:"ПП",t:"Специалисты по разработке проектов организации дорожного движения",a:"Приказ Минтранса России от 21.05.2025 № 165",u:"https://www.consultant.ru/document/cons_doc_LAW_506662/87906f0c9370a38071454b7d972a41d97f0981f1/#dst100023"},
+   {k:"ПК",t:"Специалисты по разработке проектов организации дорожного движения",a:"Приказ Минтранса России от 21.05.2025 № 165",u:"https://www.consultant.ru/document/cons_doc_LAW_506662/0ff2087d8e1493f635ec1af537089b8c7c9922df/#dst100436"}]},
+  {g:"Моделирование дорожного движения",p:[
+   {k:"ПП",t:"Специалисты по моделированию дорожного движения",a:"Приказ Минтранса России от 21.05.2025 № 165",u:"https://www.consultant.ru/document/cons_doc_LAW_506662/1165c47b43cb83f5f21d68a4abe44bed1ec4b44f/#dst100849"},
+   {k:"ПК",t:"Специалисты по моделированию дорожного движения",a:"Приказ Минтранса России от 21.05.2025 № 165",u:"https://www.consultant.ru/document/cons_doc_LAW_506662/9ad09428911c0d34f5552651291ec838524de0cf/#dst101217"}]},
+  {g:"Комплексные схемы организации дорожного движения",p:[
+   {k:"ПП",t:"Специалисты по разработке комплексных схем организации дорожного движения",a:"Приказ Минтранса России от 21.05.2025 № 165",u:"https://www.consultant.ru/document/cons_doc_LAW_506662/19cf34ff0f72beae90c3dc27eb6d7b21d5732a0d/#dst101561"},
+   {k:"ПК",t:"Специалисты по разработке комплексных схем организации дорожного движения",a:"Приказ Минтранса России от 21.05.2025 № 165",u:"https://www.consultant.ru/document/cons_doc_LAW_506662/f75bb5f67c92370a0310b8deadcf240ba1e5c1d8/#dst102120"}]},
+  {g:"Организация и мониторинг",p:[
+   {k:"ПП",t:"Специалисты по организации и мониторингу дорожного движения",a:"Приказ Минтранса России от 21.05.2025 № 165",u:"https://www.consultant.ru/document/cons_doc_LAW_506662/0b2c956986d65405c0b8c8ed0d6b6c30055852d1/#dst102681"},
+   {k:"ПК",t:"Специалисты по организации и мониторингу дорожного движения",a:"Приказ Минтранса России от 21.05.2025 № 165",u:"https://www.consultant.ru/document/cons_doc_LAW_506662/845d0d7a4a2514ea85db50884f33c9ca66db3525/#dst103163"}]},
+  {g:"Контроль в сфере ОДД",p:[
+   {k:"ПП",t:"Специалисты по контролю в сфере организации дорожного движения",a:"Приказ Минтранса России от 21.05.2025 № 165",u:"https://www.consultant.ru/document/cons_doc_LAW_506662/ae04708627777a456369cdf7bada6173aeb3f0ad/#dst103646"},
+   {k:"ПК",t:"Специалисты по контролю в сфере организации дорожного движения",a:"Приказ Минтранса России от 21.05.2025 № 165",u:"https://www.consultant.ru/document/cons_doc_LAW_506662/b1c596b96b6db505c47600faf248ed5d5feb9621/#dst104183"}]},
+  {g:"Технические средства ОДД",p:[
+   {k:"ПП",t:"Специалисты по эксплуатации технических средств организации дорожного движения",a:"Приказ Минтранса России от 21.05.2025 № 165",u:"https://www.consultant.ru/document/cons_doc_LAW_506662/5860772bfcf917e49ee6f61d9b11770097c9aa84/#dst104721"},
+   {k:"ПК",t:"Специалисты по эксплуатации технических средств организации дорожного движения",a:"Приказ Минтранса России от 21.05.2025 № 165",u:"https://www.consultant.ru/document/cons_doc_LAW_506662/7055ae9726786d67052260b0c14ba6cf7bd2aada/#dst105119"}]}]
+},
+{
+ code:"Н-03",name:"Авиационный персонал гражданской авиации",reg:"Минтранс России",status:"typ",
+ subtypes:"ДПО",
+ kw:"авиация пилот самолёт вертолёт лётный экипаж cfit л-410 ан-24 ми-8 экипаж судна моряк железная дорога машинист",
+ meaning:"Несмотря на широкое название раздела, фактически только авиационные программы: подтверждение уровня коммерческого пилота и три программы по предотвращению столкновений с землёй для конкретных типов техники. Программ по членам экипажей судов и работникам железнодорожного транспорта в перечне нет.",
+ flags:["Самая непроходная зона для обычного учебного центра: помимо лицензии почти всегда нужен статус авиационного учебного центра и материальная база с тренажёрами.","Программы привязаны к конкретным типам воздушных судов — общей программы «для пилотов» не существует.","Если клиент про моряков или железнодорожников — в этом перечне ответа нет, передавать юристу."],
+ ask:["Есть ли статус авиационного учебного центра и материальная база?","По каким типам воздушных судов планируете подготовку?","Это авиация, водный или железнодорожный транспорт?"],
+ offer:"До оценки материальной базы и статуса АУЦ цену и срок не называть. Кандидат на отказ от проекта, если нет ни базы, ни статуса.",
+ acts:[{t:"Приказ Минтранса России от 07.11.2019 № 360"},{t:"Приказ Минтранса России от 13.05.2022 № 177",n:"Три программы CFIT",until:"2028-09-01"}],
+ url:"https://www.consultant.ru/document/cons_doc_LAW_142304/b86cc12eb5b05262a1dcddef813f2786ccfe816b/",
+ req:{form:{t:"Только очно. Программы CFIT предполагают тренажёрную подготовку, дистанционно они не реализуются.",c:"check"},prac:{t:"Тренажёрная подготовка обязательна, по конкретному типу воздушного судна. Без доступа к тренажёру программа нереализуема.",c:"check"},ped:{t:"Инструкторский состав с действующими свидетельствами. Требования устанавливает Росавиация, а не только образовательное законодательство.",c:"check"}},
+ groups:[{g:"Лётный состав",p:[
+  {k:"ДПП",t:"Подготовка авиационного персонала для подтверждения уровня, соответствующего требованиям к обладателю свидетельства коммерческого пилота гражданской авиации, вид ВС «самолёт»",a:"Приказ Минтранса России от 07.11.2019 № 360",u:"https://www.consultant.ru/document/cons_doc_LAW_354505/2e6776420724f96959abe25c5a20bbaeff70937b/#dst100009"},
+  {k:"ДПП",t:"Подготовка членов лётного экипажа самолёта L-410 UVP-E20 по предотвращению столкновений исправного воздушного судна с землёй (CFIT)",a:"Приказ Минтранса России от 13.05.2022 № 177",u:"https://www.consultant.ru/document/cons_doc_LAW_418106/b5157fcd88df39f5168371bfbe2807b6de401a85/#dst100013"},
+  {k:"ДПП",t:"Подготовка членов лётного экипажа самолёта Ан-24 (Ан-26) по предотвращению столкновений исправного воздушного судна с землёй (CFIT)",a:"Приказ Минтранса России от 13.05.2022 № 177",u:"https://www.consultant.ru/document/cons_doc_LAW_418106/b75bca5aa802a6b1e10d4dad71446a5c0cd3b892/#dst100341"},
+  {k:"ДПП",t:"Подготовка членов лётного экипажа вертолётов Ми-8Т, Ми-8АМТ, Ми-8МТВ по предотвращению столкновений исправного воздушного судна с землёй (CFIT)",a:"Приказ Минтранса России от 13.05.2022 № 177",u:"https://www.consultant.ru/document/cons_doc_LAW_418106/ad8ffb8a485007cbd5f666a633384cb3355d5d07/#dst100669"}]}]
+},
+{
+ code:"Н-04",name:"Международные автомобильные перевозки",reg:"Минтранс России",status:"typ",
+ subtypes:"ДПО — ПК и ПП, профессиональное обучение",
+ kw:"перевозки международные грузоперевозки водитель допог опасные грузы консультант по безопасности логистика вэд",
+ meaning:"Смешанная зона: часть программ — профессиональное обучение водителей, часть — ДПО специалистов по организации перевозок, отдельно консультанты по безопасности перевозки опасных грузов. Клиенту с полным набором нужны оба подвида в лицензии.",
+ flags:["Три разных вида образования в одной зоне. Ошибка в подвиде означает, что часть программ клиент реализовать не сможет.","Программы по консультантам ДОПОГ ограничены сроком.","Допуск к международным перевозкам подтверждается отдельно. Обучение — не допуск."],
+ ask:["Обучаете водителей, специалистов по организации перевозок или консультантов по опасным грузам?","Нужно ли профессиональное обучение отдельным подвидом?","Есть ли у слушателей СПО или ВО?"],
+ offer:"Почти всегда два подвида лицензии — честный аргумент за «Полную упаковку». Уточнить планы по опасным грузам: там отдельные программы и срок.",
+ acts:[{t:"Приказ Минтранса России от 14.05.2015 № 172"},{t:"Приказ Минтранса России от 23.06.2016 № 175",n:"Консультанты по безопасности перевозки опасных грузов",until:"2028-09-01"}],
+ url:"https://www.consultant.ru/document/cons_doc_LAW_142304/dc0ed6c267ed46d5bf8906203e3bbaf8215756b2/",
+ req:{form:{t:"Теоретическая часть дистанционно. Профессиональное обучение водителей требует очной практической части.",c:"check"},prac:{t:"Для водителей — практическая подготовка. Для консультантов по опасным грузам — практические занятия по классификации грузов и действиям при инцидентах.",c:"check"},ped:{t:"Преподаватели с опытом в международных перевозках; для водительских программ — мастера производственного обучения.",c:"check"}},
+ groups:[
+  {g:"Водители",p:[
+   {k:"ПО",t:"Повышение квалификации водителей, осуществляющих перевозку пассажиров и грузов в международном сообщении",a:"Приказ Минтранса России от 14.05.2015 № 172",u:"https://www.consultant.ru/document/cons_doc_LAW_391948/08d6935685ea6d39fe7fa652cb3d4e3f1b4de503/#dst100014"},
+   {k:"доп.",t:"Дополнительное обучение водителей, осуществляющих перевозку пассажиров и грузов в международном сообщении",a:"Приказ Минтранса России от 14.05.2015 № 172",u:"https://www.consultant.ru/document/cons_doc_LAW_391948/5f03ff183fd226ee36b30d45f4e5a24583e1b813/#dst101051"}]},
+  {g:"Специалисты по организации перевозок",p:[
+   {k:"ПК",t:"Специалисты по организации перевозок автомобильным транспортом в международном сообщении",a:"Приказ Минтранса России от 14.05.2015 № 172",u:"https://www.consultant.ru/document/cons_doc_LAW_391948/051d74095ecad8eaf2a1d1b37135662576cc234d/#dst100453"},
+   {k:"доп.",t:"Дополнительное обучение специалистов по организации перевозок автомобильным транспортом в международном сообщении",a:"Приказ Минтранса России от 14.05.2015 № 172",u:"https://www.consultant.ru/document/cons_doc_LAW_391948/cc8a7a1c384effd0a5acd121469d34870d325a0f/#dst101486"}]},
+  {g:"Опасные грузы (ДОПОГ)",p:[
+   {k:"ПК",t:"Консультанты по вопросам безопасности перевозки опасных грузов автомобильным транспортом",a:"Приказ Минтранса России от 23.06.2016 № 175",u:"https://www.consultant.ru/document/cons_doc_LAW_409558/271978554a31eb81ac1cfb5a656f1e9730f8ae98/#dst100012"},
+   {k:"ПП",t:"Консультанты по вопросам безопасности перевозки опасных грузов автомобильным транспортом",a:"Приказ Минтранса России от 23.06.2016 № 175",u:"https://www.consultant.ru/document/cons_doc_LAW_409558/d63f6f30af36cdfd6ee1d541e8e1972c0e02bc64/#dst100389"}]}]
+},
+{
+ code:"Н-05",name:"Кадастровая деятельность",reg:"Минэкономразвития России",status:"typ",
+ subtypes:"ДПО — ПК и ПП",
+ kw:"кадастр кадастровый инженер сро межевание технический план недвижимость росреестр землеустройство",
+ meaning:"Одна программа переподготовки на квалификацию «Кадастровая деятельность» и три программы повышения квалификации. Спрос повторяющийся: кадастровые инженеры обязаны периодически повышать квалификацию.",
+ flags:["Клиент часто путает обучение с получением квалификационного аттестата кадастрового инженера — аттестат мы не выдаём.","Проверить требования СРО кадастровых инженеров: могут быть строже общих.","Три программы ПК разные по темам — уточнять, какая нужна."],
+ ask:["Обучаете действующих кадастровых инженеров или готовите новых через переподготовку?","Какая программа ПК нужна из трёх?","Работаете с конкретным СРО, есть ли у него дополнительные требования?"],
+ offer:"Хорошая зона для повторных продаж: у клиента постоянный поток слушателей. Сразу предлагать годовое сопровождение.",
+ acts:[{t:"Приказ Минэкономразвития России от 24.08.2016 № 541"}],
+ url:"https://www.consultant.ru/document/cons_doc_LAW_142304/1d0e8e1ce5a71a3a90280620461389e4da921179/",
+ req:{form:{t:"Дистант допустим: программы преимущественно теоретические и правовые.",c:"check"},prac:{t:"Практические работы с документами и профильным ПО — подготовка межевых и технических планов. Выездная практика не требуется.",c:"check"},ped:{t:"Действующие кадастровые инженеры и юристы по земельно-имущественным отношениям.",c:"check"}},
+ groups:[
+  {g:"Профессиональная переподготовка",p:[
+   {k:"ПП",t:"Кадастровая деятельность",a:"Приказ Минэкономразвития России от 24.08.2016 № 541",u:"https://www.consultant.ru/document/cons_doc_LAW_289055/f2d03207d85547017300011934d6d291422c10de/#dst100013"}]},
+  {g:"Повышение квалификации",p:[
+   {k:"ПК",t:"Современные технологии в области кадастровой деятельности",a:"Приказ Минэкономразвития России от 24.08.2016 № 541",u:"https://www.consultant.ru/document/cons_doc_LAW_289055/7138b0060b0b9c756e82bc5c315eeafd26fa9372/#dst100368"},
+   {k:"ПК",t:"Актуальные проблемы взаимодействия субъектов кадастровых отношений",a:"Приказ Минэкономразвития России от 24.08.2016 № 541",u:"https://www.consultant.ru/document/cons_doc_LAW_289055/228e3431183846f5905fb511b6e764ea5392fcb3/#dst100515"},
+   {k:"ПК",t:"Актуальные вопросы законодательства в области кадастровой деятельности",a:"Приказ Минэкономразвития России от 24.08.2016 № 541",u:"https://www.consultant.ru/document/cons_doc_LAW_289055/e47282405bf5edede7ec967a6af2006da0eb2534/#dst100642"}]}]
+},
+{
+ code:"Н-06",name:"Экспортный контроль",reg:"ФСТЭК России",status:"typ",
+ subtypes:"ДПО — повышение квалификации",
+ kw:"экспортный контроль фстэк вэд внешнеэкономическая деятельность двойное назначение опк",
+ meaning:"Одна типовая программа. Узкая зона с корпоративным заказчиком: предприятия ОПК и организации, ведущие ВЭД с продукцией двойного назначения.",
+ flags:["Регулятор ФСТЭК, а не Минобрнауки. Требования к организации обучения проверять отдельно.","Заказчики часто с режимными ограничениями: возможны требования к допуску персонала и площадке, дистант подходит не всегда.","Обязательна только эта программа, линейка курсов по ВЭД — свободная разработка."],
+ ask:["Обучаете специалистов внутрифирменной программы экспортного контроля?","Есть ли требования к режиму и допуску, влияющие на формат?","Планируете только эту программу или линейку курсов?"],
+ offer:"Нишевая зона с высоким чеком. Перед продажей уточнить требования ФСТЭК к организации обучения — передать юристу.",
+ acts:[{t:"Приказ ФСТЭК России от 27.10.2015 № 133"}],
+ url:"https://www.consultant.ru/document/cons_doc_LAW_142304/a8587b08b9683ac85a14a6bdbed4d341078e7646/",
+ req:{form:{t:"Дистант технически возможен, но заказчики с режимными ограничениями часто требуют очного обучения на своей площадке.",c:"check"},prac:{t:"Практикум по идентификации и классификации продукции. Выездная практика не требуется.",c:"check"},ped:{t:"Специалисты с опытом внешнеэкономической деятельности и работы во внутрифирменных программах экспортного контроля.",c:"check"}},
+ groups:[{g:"Экспортный контроль",p:[
+  {k:"ПК",t:"Специалисты в области экспортного контроля",a:"Приказ ФСТЭК России от 27.10.2015 № 133",u:"https://www.consultant.ru/document/cons_doc_LAW_189331/4619c0bb02d7ad5e73cc2fefeceaf7eb6d86a322/#dst100009"}]}]
+},
+{
+ code:"Н-07",name:"Оценка соответствия ККТ и техсредств ОФД",reg:"ФНС России",status:"typ",
+ subtypes:"ДПО",
+ kw:"ккт касса контрольно-кассовая техника фискальный накопитель офд оператор фискальных данных фнс испытательная лаборатория",
+ meaning:"Одна типовая программа ФНС 2025 года. Крайне узкая зона: слушатели — специалисты экспертных организаций, проводящих оценку соответствия ККТ. Массового спроса нет.",
+ flags:["Не путать с обучением кассиров работе на кассе — это другая тема и она вне перечня.","Регулятор ФНС, требования к организации обучения проверять отдельно.","Круг слушателей узкий: при расчёте на массовый поток экономика курса не сойдётся."],
+ ask:["Вы обучаете экспертов по оценке соответствия ККТ или всё-таки кассиров?","Кто заказчик: экспертная организация, производитель ККТ, ОФД?","Какой ожидаемый поток слушателей в год?"],
+ offer:"Проверить, не перепутал ли клиент тему: заявка «обучение по кассам» в девяти случаях из десяти означает свободную разработку.",
+ acts:[{t:"Приказ ФНС России от 17.03.2025 № ЕД-7-20/207@"}],
+ url:"https://www.consultant.ru/document/cons_doc_LAW_142304/85d777fc4559c14a0e501c0a644b925425114ed1/",
+ req:{form:{t:"Дистант допустим для теории. Работа с образцами техники требует очной части.",c:"check"},prac:{t:"Практическая работа с контрольно-кассовой техникой и фискальными накопителями. Нужны образцы оборудования.",c:"check"},ped:{t:"Эксперты с опытом оценки соответствия ККТ и работы с фискальными данными.",c:"check"}},
+ groups:[{g:"Оценка соответствия ККТ",p:[
+  {k:"ДПП",t:"Оценка соответствия контрольно-кассовой техники, фискальных накопителей и технических средств оператора фискальных данных предъявляемым к ним требованиям",a:"Приказ ФНС России от 17.03.2025 № ЕД-7-20/207@",u:"https://www.consultant.ru/document/cons_doc_LAW_503734/553063c9b24b0b723be6e5e1bc47420445cbe935/#dst100012"}]}]
+},
+{
+ code:"Н-08",name:"Промышленная безопасность ОПО",reg:"Ростехнадзор, отдельная программа — Минтранс",status:"typ",
+ subtypes:"ДПО — повышение квалификации",
+ kw:"промышленная безопасность опо ростехнадзор нефть газ химия нефтехимия металлургия горнорудная угольная маркшейдер газораспределение давление подъёмные сооружения взрывные работы танкер аттестация",
+ meaning:"Двенадцать типовых программ повышения квалификации по отраслям одним приказом Ростехнадзора плюс отдельная программа Минтранса по танкерам. Крупный и денежный сегмент: обучение покупают заводы и подрядчики регулярно, а не разово.",
+ flags:["Аттестация в области промышленной безопасности проводится Ростехнадзором и в услугу лицензирования не входит. Не обещать «аттестуем ваших людей».","Клиент часто путает промышленную безопасность с охраной труда — разные требования и регуляторы.","Несколько отраслей означают кратный рост методической работы и должны отражаться в тарифе."],
+ ask:["По каким отраслям обучаете: сколько направлений из двенадцати?","Для собственных сотрудников или как коммерческая услуга?","Есть ли действующая лицензия или заходим с нуля?"],
+ offer:"Кандидат на «Полную упаковку»: обычно нужны несколько отраслей, ФРДО и годовое сопровождение — нормативка Ростехнадзора обновляется часто.",
+ acts:[{t:"Приказ Ростехнадзора от 13.04.2020 № 155",n:"Двенадцать типовых ДПП по отраслям"},{t:"Приказ Минтранса России от 03.06.2015 № 181"}],
+ url:"https://www.consultant.ru/document/cons_doc_LAW_142304/f325056931072cf7eab1295f4186206718354838/",
+ req:{form:{t:"Дистант широко применяется: программы теоретические, привязки к оборудованию нет.",c:"check"},prac:{t:"Практических занятий на действующем опасном производственном объекте типовые программы, как правило, не предполагают.",c:"check"},ped:{t:"Специалисты с опытом работы на объектах соответствующей отрасли, часто с действующей аттестацией Ростехнадзора.",c:"check"}},
+ groups:[
+  {g:"Нефтегаз и химия",p:[
+   {k:"ПК",t:"Требования промышленной безопасности в химической, нефтехимической и нефтеперерабатывающей промышленности",a:"Приказ Ростехнадзора от 13.04.2020 № 155",u:"https://www.consultant.ru/document/cons_doc_LAW_359472/afea6d7b3bd88f1b64f37ec00eede63a7962ce41/#dst100009"},
+   {k:"ПК",t:"Требования промышленной безопасности в нефтяной и газовой промышленности",a:"Приказ Ростехнадзора от 13.04.2020 № 155",u:"https://www.consultant.ru/document/cons_doc_LAW_359472/887a615b4345481b5b29b6024624632be60efc2d/#dst100224"}]},
+  {g:"Горное дело и металлургия",p:[
+   {k:"ПК",t:"Требования промышленной безопасности в металлургической промышленности",a:"Приказ Ростехнадзора от 13.04.2020 № 155",u:"https://www.consultant.ru/document/cons_doc_LAW_359472/660fd4fdbe3034a097e2929e0d9897cb33d69794/#dst100442"},
+   {k:"ПК",t:"Требования промышленной безопасности в горнорудной промышленности",a:"Приказ Ростехнадзора от 13.04.2020 № 155",u:"https://www.consultant.ru/document/cons_doc_LAW_359472/acef9af88dda38a09f395439745d0db08a9d9643/#dst100697"},
+   {k:"ПК",t:"Требования промышленной безопасности в угольной промышленности",a:"Приказ Ростехнадзора от 13.04.2020 № 155",u:"https://www.consultant.ru/document/cons_doc_LAW_359472/935a734d8c3f9476a88f054c4b9d6af976756468/#dst100936"},
+   {k:"ПК",t:"Требования промышленной безопасности в области маркшейдерского обеспечения горных работ",a:"Приказ Ростехнадзора от 13.04.2020 № 155",u:"https://www.consultant.ru/document/cons_doc_LAW_359472/851b98b6d6b2f474eee3a33b358a0b913bdcbfb8/#dst101215"},
+   {k:"ПК",t:"Требования промышленной безопасности, относящиеся к взрывным работам",a:"Приказ Ростехнадзора от 13.04.2020 № 155",u:"https://www.consultant.ru/document/cons_doc_LAW_359472/295d4d4d6d33bd498173ddb0f2d64d4be1ca806e/#dst102694"}]},
+  {g:"Оборудование и объекты",p:[
+   {k:"ПК",t:"Требования промышленной безопасности на объектах газораспределения и газопотребления",a:"Приказ Ростехнадзора от 13.04.2020 № 155",u:"https://www.consultant.ru/document/cons_doc_LAW_359472/92a64483024d95c5be42be5412d278596ac7d087/#dst101534"},
+   {k:"ПК",t:"Требования промышленной безопасности к оборудованию, работающему под давлением",a:"Приказ Ростехнадзора от 13.04.2020 № 155",u:"https://www.consultant.ru/document/cons_doc_LAW_359472/684ff4e8d4ebced207013430678dd7ccc5739157/#dst101776"},
+   {k:"ПК",t:"Требования промышленной безопасности к подъёмным сооружениям",a:"Приказ Ростехнадзора от 13.04.2020 № 155",u:"https://www.consultant.ru/document/cons_doc_LAW_359472/5bf55fc85963b01e8717afdbee86331cd82e6ab6/#dst102035"}]},
+  {g:"Опасные вещества и хранение",p:[
+   {k:"ПК",t:"Требования промышленной безопасности при транспортировании опасных веществ",a:"Приказ Ростехнадзора от 13.04.2020 № 155",u:"https://www.consultant.ru/document/cons_doc_LAW_359472/0ee399132be7973f336f58692e4b7a5ed5760419/#dst102360"},
+   {k:"ПК",t:"Требования промышленной безопасности на объектах хранения и переработки растительного сырья",a:"Приказ Ростехнадзора от 13.04.2020 № 155",u:"https://www.consultant.ru/document/cons_doc_LAW_359472/9f77ea8bbb9807b769c01e06a69872549c2ef16c/#dst102520"}]},
+  {g:"Морской транспорт",p:[
+   {k:"ПК",t:"Начальная подготовка рядового состава для работы на нефтяных танкерах и танкерах-химовозах",a:"Приказ Минтранса России от 03.06.2015 № 181",u:"https://www.consultant.ru/document/cons_doc_LAW_182553/030518741795816a92ae287e812cec9e99e48708/#dst100009"}]}]
+},
+{
+ code:"Н-09",name:"Строительство и ЖКХ",reg:"Минстрой России",status:"typ",
+ subtypes:"ДПО",
+ kw:"строительство жкх тим bim информационное моделирование минстрой проектирование управляющая компания сро строителей",
+ meaning:"Вопреки широкому названию раздела, в перечне одна типовая программа — по технологиям информационного моделирования. Всё остальное обучение в строительстве и ЖКХ типовыми программами не связано.",
+ flags:["Главная ловушка: клиент, который хочет учить «строителей вообще» или «работников ЖКХ», сюда не попадает. У него свободная разработка и обычный тариф.","Не путать с охраной труда в строительстве и с промышленной безопасностью.","Повышение квалификации специалистов национальных реестров НОСТРОЙ и НОПРИЗ регулируется отдельно и в перечне отсутствует."],
+ ask:["Тема именно про информационное моделирование или про строительство в широком смысле?","Обучение связано с национальными реестрами специалистов?","Планируете охрану труда в строительстве? Это другая зона."],
+ offer:"Чаще всего клиент из этой отрасли попадает в свободную разработку — хорошая новость для сроков. Отдельно проверить смежные темы.",
+ acts:[{t:"Приказ Минстроя России от 14.08.2025 № 488/пр"}],
+ url:"https://www.consultant.ru/document/cons_doc_LAW_142304/a8f0fc3a2103239bfb1de968c094600575b12e92/",
+ req:{form:{t:"Дистант возможен при доступе слушателей к среде информационного моделирования.",c:"check"},prac:{t:"Практикум в ТИМ-среде. Лицензии на программное обеспечение — отдельная статья расходов, обсуждать с клиентом до договора.",c:"check"},ped:{t:"Специалисты с практическим опытом ТИМ-проектирования, а не только преподаватели-теоретики.",c:"check"}},
+ groups:[{g:"Информационное моделирование",p:[
+  {k:"ДПП",t:"Технологии информационного моделирования в строительстве",a:"Приказ Минстроя России от 14.08.2025 № 488/пр",u:"https://www.consultant.ru/document/cons_doc_LAW_513508/050ba1bd68ea4e7237eadc074876699c01c47325/#dst100010"}]}]
+},
+{
+ code:"Н-10",name:"Отходы I–IV классов опасности",reg:"Минприроды России",status:"typ",
+ subtypes:"ДПО — ПК, профессиональное обучение",
+ kw:"отходы экология мусор утилизация обезвреживание размещение опасные отходы тко региональный оператор экологическая безопасность",
+ meaning:"Обучение обязательно для допуска работников к обращению с отходами, спрос устойчивый. Одна типовая ДПП повышения квалификации плюс примерная программа профессиональной подготовки — зона захватывает и ДПО, и профобучение.",
+ flags:["Две программы относятся к разным видам образования. Нужны оба подвида в лицензии, если клиенту нужны обе.","Примерная программа 2002 года — высокий риск, что клиент найдёт устаревший шаблон в интернете.","Клиенты смешивают это с экологической безопасностью в целом — уточнять."],
+ ask:["Обучаете на допуск к работе с отходами или по экологической безопасности в целом?","Слушатели с профильным образованием или без?","Нужны оба подвида в лицензии?"],
+ offer:"Проверить, нужны ли одновременно ДПО и профобучение. Если да — расширенный лицензионный комплект и повод для «Полной упаковки».",
+ acts:[{t:"Приказ Минприроды России от 15.10.2021 № 755",until:"2028-09-01"},{t:"Приказ МПР России от 18.12.2002 № 868",n:"Редакция 2002 года — сверять актуальность"}],
+ url:"https://www.consultant.ru/document/cons_doc_LAW_142304/db6c08c0b22e54d45483dfdcfdda143556ae6ac4/",
+ req:{form:{t:"ДПО реализуется дистанционно. Профессиональная подготовка на право работы с опасными отходами предполагает практическую часть.",c:"check"},prac:{t:"Для программы профессиональной подготовки — практические занятия, возможна практика на объекте обращения с отходами по договору.",c:"check"},ped:{t:"Экологи с профильным образованием и опытом работы в области обращения с отходами.",c:"check"}},
+ groups:[
+  {g:"ДПО",p:[{k:"ПК",t:"Сбор, транспортирование, обработка, утилизация, обезвреживание, размещение отходов I–IV классов опасности",a:"Приказ Минприроды России от 15.10.2021 № 755",u:"https://www.consultant.ru/document/cons_doc_LAW_407723/ad45a590f59369ff2a68b0928be9b47d5d056b86/#dst100010"}]},
+  {g:"Профессиональное обучение",p:[{k:"ПО",t:"Профессиональная подготовка лиц на право работы с опасными отходами (примерная программа)",a:"Приказ МПР России от 18.12.2002 № 868",u:"https://www.consultant.ru/document/cons_doc_LAW_146579/ac025906411cca4fc72b52b1d14a0f4810772ee7/#dst100013"}]}]
+},
+{
+ code:"Н-11",name:"Пожарная безопасность",reg:"МЧС России",status:"typ",
+ subtypes:"ДПО — ПК и ПП, профессиональное обучение",
+ kw:"пожарная безопасность мчс пожарный противопожарный инструктаж профилактика тушение монтаж средств обеспечения добровольный пожарный ответственный за пожарную безопасность",
+ meaning:"Самая насыщенная зона для обычного учебного центра: десять программ. Пять — повышение квалификации ответственных, четыре — переподготовка, включая квалификацию «Специалист по пожарной профилактике», две — профобучение добровольных пожарных. Ответственные за пожарную безопасность есть в каждой организации.",
+ flags:["Программы по добровольным пожарным — профессиональное обучение, а не ДПО. Разные подвиды лицензии.","Противопожарный инструктаж не образовательная программа и не лицензируется. Не путать с программой ПК для тех, кто его проводит.","Ограничения по форме обучения и требования к базе идут не из типовой программы, а из лицензионных требований и учебного плана. Приказ № 596 таких ограничений не содержит — не додумывать их за регулятора."],
+ ask:["Обучаете ответственных, руководителей или готовите специалистов по пожарной профилактике?","Планируете программы по добровольным пожарным? Это отдельный подвид.","Есть ли в лицензии профессиональное обучение или только ДПО?"],
+ offer:"Одна из самых конверсионных тем. Почти всегда нужны и ДПО, и профобучение. Аргумент к «Полной упаковке»: десять программ и частая смена нормативки требуют годового сопровождения.",
+ acts:[
+  {t:"Приказ МЧС России от 05.09.2021 № 596",n:"Пять типовых ДПП",until:"2028-03-01"},
+  {t:"Приказ МЧС России от 15.11.2022 № 1156"},
+  {t:"Приказ МЧС России от 30.09.2025 № 876",from:"2026-03-01",until:"2032-03-01"},
+  {t:"Приказ МЧС России от 22.09.2025 № 845",from:"2026-03-01",until:"2032-03-01"}],
+ url:"https://www.consultant.ru/document/cons_doc_LAW_142304/1e305cf839d2d66af975f5f33dd27ca1c062039c/",
+ req:{form:{t:"Проверено по тексту приказа № 596: ограничений по форме обучения он не устанавливает. Раздел «Условия реализации» прямо относит выбор методов обучения к компетенции преподавателя — с учётом состава слушателей, сложности материала и наличия учебного оборудования. Дистанционное обучение по программам для ответственных за пожарную безопасность допустимо. Условия по приказу № 1156 (переподготовка по тушению и монтажу) не выгружены — сверять отдельно.",c:"src"},prac:{t:"Практические занятия предусмотрены учебным планом почти в каждом модуле, но отдельной учебной базы, полигона или боевой одежды приказ № 596 не требует: занятия проводятся в ситуациях, имитирующих реальные производственные процессы. По программам тушения пожаров и монтажа средств обеспечения ПБ (приказ № 1156) требования не выгружены — сверять отдельно.",c:"src"},ped:{t:"Требований к преподавательскому составу приказ № 596 не устанавливает. Действуют общие квалификационные требования к педагогическим работникам ДПО.",c:"src"}},
+ groups:[
+  {g:"Ответственные за пожарную безопасность",p:[
+   {k:"ПК",t:"Руководители организаций и лица, ответственные за пожарную безопасность на объектах с одновременным пребыванием 50 и более человек и объектах повышенной взрывопожароопасности",a:"Приказ МЧС России от 05.09.2021 № 596",u:"https://www.consultant.ru/document/cons_doc_LAW_540566/ed34a4d288fcb3cf736362e00146767341422c14/#dst100019"},
+   {k:"ДПП",t:"Руководители эксплуатирующих и управляющих организаций и назначенные ими ответственные за пожарную безопасность",a:"Приказ МЧС России от 05.09.2021 № 596",u:"https://www.consultant.ru/document/cons_doc_LAW_540566/04aad686d5598f7b7747012efcbf7f831baf1019/#dst100191"},
+   {k:"ДПП",t:"Ответственные должностные лица — главные специалисты технического и производственного профиля",a:"Приказ МЧС России от 05.09.2021 № 596",u:"https://www.consultant.ru/document/cons_doc_LAW_540566/15f049e838c7d2944e2e04558da05dcb395c153a/#dst100376"},
+   {k:"ПК",t:"Лица, на которых возложена трудовая функция по проведению противопожарного инструктажа",a:"Приказ МЧС России от 05.09.2021 № 596",u:"https://www.consultant.ru/document/cons_doc_LAW_540566/16efde99a445dd608cf4ffeb84d47c48bd770584/#dst100579"}]},
+  {g:"Переподготовка специалистов",p:[
+   {k:"ПП",t:"Специалист по пожарной профилактике",a:"Приказ МЧС России от 05.09.2021 № 596",u:"https://www.consultant.ru/document/cons_doc_LAW_540566/951645ddecc40fdcfa3b7b4bb959a5a1b07780e3/#dst100733"},
+   {k:"ПП",t:"Деятельность по монтажу, техническому обслуживанию и ремонту средств обеспечения пожарной безопасности зданий и сооружений, а также их проектированию",a:"Приказ МЧС России от 15.11.2022 № 1156",u:"https://www.consultant.ru/document/cons_doc_LAW_540260/a2c0758857b56dab0f505e611a1322dd9c5d66a6/#dst100020"},
+   {k:"ПП",t:"Деятельность по монтажу, техническому обслуживанию и ремонту средств обеспечения пожарной безопасности зданий и сооружений",a:"Приказ МЧС России от 15.11.2022 № 1156",u:"https://www.consultant.ru/document/cons_doc_LAW_540260/fef39a2bb36bca9d834ef001e6e5fee3ff55e23f/#dst100564"},
+   {k:"ПП",t:"Деятельность по тушению пожаров в населённых пунктах, на производственных объектах и объектах инфраструктуры",a:"Приказ МЧС России от 15.11.2022 № 1156",u:"https://www.consultant.ru/document/cons_doc_LAW_540260/40e02f635094e52aeb97e2ff0e23032aae99ef00/#dst100374"}]},
+  {g:"Добровольные пожарные",p:[
+   {k:"ПО",t:"Профессиональная подготовка «Добровольный пожарный»",a:"Приказ МЧС России от 30.09.2025 № 876",u:"https://www.consultant.ru/document/cons_doc_LAW_518402/1a70fb74e19bb49b02d8c63199549ab14551f249/#dst100010"},
+   {k:"ПО",t:"Повышение квалификации по виду деятельности «Добровольный пожарный»",a:"Приказ МЧС России от 22.09.2025 № 845",u:"https://www.consultant.ru/document/cons_doc_LAW_518403/dd16c5d469b2f47346299034929520e7f4c3afc0/#dst100010"}]}]
+},
+{
+ code:"Н-12",name:"Гражданская оборона и защита от ЧС",reg:"МЧС России",status:"prim",
+ subtypes:"ДПО — повышение квалификации",
+ kw:"го чс гражданская оборона чрезвычайные ситуации мчс рсчс эвакуация уполномоченный по го",
+ meaning:"Программа примерная, а не типовая: задаёт ориентир, организация разрабатывает свою программу в соответствии с ней. Свободы больше, но ссылка на примерную программу в документах обязательна.",
+ flags:["Утверждена письмом МЧС, а не приказом — реквизит нестандартный, ссылку оформлять аккуратно.","Обучение в области ГО и ЧС регулируется отдельным порядком подготовки населения; примерная ДПП покрывает часть категорий.","Инструктаж по ГО не является образовательной программой."],
+ ask:["Какие категории обучаете: руководители ГО, работники органов управления РСЧС, преподаватели курсов?","Планируете только ГО или ещё пожарную безопасность — часто идут в паре.","Дистант или очно с практическими занятиями?"],
+ offer:"Идёт в связке с пожарной безопасностью и охраной труда — предлагать пакетом. Программа примерная, значит методисту нужно писать содержание: закладывать методические часы в смету.",
+ acts:[{t:"МЧС России, 30.10.2020 № 2-4-71-11-10",n:"Примерная ДПП"}],
+ url:"https://www.consultant.ru/document/cons_doc_LAW_142304/57902c74c002d335de128ef0e40a439c554404d1/",
+ req:{form:{t:"Дистант допустим. Практические занятия и тренировки повышают качество, но обычно не блокируют дистанционный формат.",c:"check"},prac:{t:"Практические занятия по действиям при ЧС и эвакуации. Специальная база, как правило, не требуется.",c:"check"},ped:{t:"Специалисты с опытом работы в органах управления ГО и РСЧС.",c:"check"}},
+ groups:[{g:"Гражданская оборона и ЧС",p:[
+  {k:"ПК",t:"Руководители и работники гражданской обороны, органов управления РСЧС и отдельные категории лиц, осуществляющих подготовку по программам обучения в области ГО и защиты от ЧС",a:"МЧС России, 30.10.2020 № 2-4-71-11-10",u:"https://www.consultant.ru/document/cons_doc_LAW_367637/4a01d2b842516d533ae107a9d8ed340ac22eceaa/#dst100003"}]}]
+},
+{
+ code:"Н-13",name:"Частная охранная и детективная деятельность",reg:"Росгвардия",status:"typ",
+ subtypes:"ДПО — ПК, профессиональное обучение",
+ kw:"охрана чоп чоо охранник детектив росгвардия частная охранная деятельность руководитель чоо",
+ meaning:"Зона с самым сильным поводом для звонка прямо сейчас. У всех действующих учебных центров по охране программы придётся переутверждать под новые приказы Росгвардии. Готовая причина для исходящего обзвона и допродажи сопровождения.",
+ flags:["Продавать по приказам № 239 и № 396 после даты отмены нельзя — программы утратят силу.","Подготовка охранников и детективов — профобучение, ПК руководителей ЧОО — ДПО. Нужны разные подвиды.","Периодическая проверка охранников и удостоверение частного охранника — компетенция Росгвардии, не образовательная услуга.","Федеральный закон № 427-ФЗ меняет основания для ПК руководителей — состав программ проверяет юрист."],
+ ask:["Обучаете охранников, руководителей ЧОО или детективов? Три разных блока.","Знаете, что программы Росгвардии меняются с 1 сентября 2026 года? Как планируете переход?","Есть ли действующая лицензия и есть ли в ней профессиональное обучение?"],
+ offer:"Приоритетная тема для исходящих продаж. Действующим клиентам — сопровождение перехода на новые приказы отдельной платной работой. Новым — лицензия сразу с двумя подвидами.",
+ acts:[
+  {t:"Приказ Росгвардии от 28.06.2021 № 239",n:"Замена — приказ № 213",until:"2026-09-01"},
+  {t:"Приказ Росгвардии от 30.11.2019 № 396",n:"Замена — приказ № 212",until:"2026-09-01"},
+  {t:"Приказ Росгвардии от 18.06.2026 № 213",from:"2026-09-01"},
+  {t:"Приказ Росгвардии от 18.06.2026 № 212",from:"2026-09-01"},
+  {t:"Приказ Росгвардии от 06.02.2019 № 33"}],
+ url:"https://www.consultant.ru/document/cons_doc_LAW_142304/b504688d23ee1c7b5505ca7822824b0f85affa66/",
+ req:{form:{t:"Только очно в части огневой, физической и специальной подготовки. Полностью дистанционно программы охранников не реализуются.",c:"check"},prac:{t:"Обязательна. Огневая подготовка требует тира — собственного или по договору. Также применение специальных средств, приёмы задержания, оказание первой помощи. Отсутствие тира делает лицензирование бессмысленным: спросить об этом до продажи.",c:"check"},ped:{t:"Преподаватели и инструкторы по огневой и физической подготовке с соответствующей квалификацией. Требования устанавливает Росгвардия.",c:"check"}},
+ groups:[
+  {g:"Руководители ЧОО",p:[
+   {k:"ПК",t:"Руководители частных охранных организаций, впервые назначаемые на должность",a:"Приказ Росгвардии от 28.06.2021 № 239",u:"https://www.consultant.ru/document/cons_doc_LAW_392195/1b7c12685f1b890b2e053d09992f70bfa443bd18/#dst100011"},
+   {k:"ПК",t:"Руководители частных охранных организаций",a:"Приказ Росгвардии от 28.06.2021 № 239",u:"https://www.consultant.ru/document/cons_doc_LAW_392195/17105020d2c16bfbc25165a9a3da7443c81b9635/#dst100512"},
+   {k:"ПК",t:"Руководители ЧОО, проходящие повышение квалификации по основаниям части 4 статьи 36 Федерального закона от 30.11.2024 № 427-ФЗ",a:"Приказ Росгвардии от 18.06.2026 № 213",u:"https://www.consultant.ru/document/cons_doc_LAW_539572/76b314f1028caeaa47a276629f6fa8428d8bac85/#dst101046"}]},
+  {g:"Охранники",p:[
+   {k:"ПО",t:"Профессиональная подготовка охранников",a:"Приказ Росгвардии от 30.11.2019 № 396",u:"https://www.consultant.ru/document/cons_doc_LAW_475799/a597a8a38f2bda3dbea376cc82053d903b2b8e66/#dst100014"},
+   {k:"ПО",t:"Повышение квалификации охранников",a:"Приказ Росгвардии от 30.11.2019 № 396",u:"https://www.consultant.ru/document/cons_doc_LAW_475799/d9deda280d372b0f9ca33d53db4a47013030acd6/#dst101234"}]},
+  {g:"Частные детективы",p:[
+   {k:"ПО",t:"Профессиональная подготовка частных детективов",a:"Приказ Росгвардии от 06.02.2019 № 33",u:"https://www.consultant.ru/document/cons_doc_LAW_319819/642f990ab78af4eb90d10c52fc2e0dc36d0cc970/#dst100014"},
+   {k:"ПО",t:"Повышение квалификации частных детективов",a:"Приказ Росгвардии от 06.02.2019 № 33",u:"https://www.consultant.ru/document/cons_doc_LAW_319819/147c87608003db9f3b9ed8111d43c97e08675da9/#dst100526"}]}]
+},
+{
+ code:"Н-14",name:"Медицинское и фармацевтическое образование",reg:"Минздрав России",status:"typ",
+ subtypes:"ДПО — ПК и ПП",
+ kw:"медицина медицинское фармацевтическое нмо врач медсестра сестринское стоматология косметология фармация минздрав специальность аккредитация массаж",
+ alert:"В январе–июне 2026 года Минздрав массово переиздал типовые ДПП: по большинству специальностей действуют приказы 2026 года. Программа, найденная клиентом в интернете, почти наверняка устарела. Точный реквизит приказа по конкретной специальности смотреть в источнике.",
+ meaning:"Самый объёмный блок: типовые ДПП повышения квалификации и профессиональной переподготовки примерно по ста двадцати специальностям. По многим специальностям программы разведены по уровню базового образования (СПО или ВО) и по числу академических часов, поэтому одной специальности может соответствовать несколько программ.",
+ flags:["Медицинское ДПО — не только образовательная лицензия. Проверять медицинскую лицензию, аккредитацию специалистов, работу в системе НМО. Менеджер заключение не даёт.","Массовое переиздание 2026 года: программа клиента старше 2026 года требует проверки.","Для одной специальности бывает несколько программ — по уровню образования и по числу часов. Ошибка означает переделку.","Требования к преподавательскому составу жёстче обычного — проверять до продажи."],
+ ask:["По каким конкретно специальностям обучение? Нужен точный перечень, не «медицина в целом».","Слушатели с высшим или средним профессиональным медицинским образованием?","Планируете работу в системе НМО?","Есть ли медицинская лицензия или организация-партнёр для практической подготовки?"],
+ offer:"Передавать профильному юристу до озвучивания цены и срока. Точка входа в медицинское направление: образовательная лицензия, НМО, медицинская лицензия, сопровождение.",
+ acts:[{t:"Приказы Минздрава России, январь–июнь 2026",n:"Массовое переиздание типовых ДПП по большинству специальностей"},
+       {t:"Приказ Минздрава России от 22.01.2014 № 37н",n:"Примерные ДПП по обращению лекарственных средств и промышленной фармации"},
+       {t:"Приказ Минтруда России от 17.04.2026 № 165н",n:"Руководитель учреждения медико-социальной экспертизы"}],
+ url:"https://www.consultant.ru/document/cons_doc_LAW_142304/e502f39e3a888baef18a1fe5b3a7d0878b9a266a/",
+ medNote:"Есть типовые ДПП повышения квалификации и (или) профессиональной переподготовки. Точный реквизит приказа и число вариантов программы по этой специальности уточнить в источнике.",
+ req:{form:{t:"Полный дистант, как правило, невозможен. Типовые ДПП предусматривают практическую подготовку и симуляционное обучение.",c:"check"},prac:{t:"Практическая подготовка в медицинской организации по договору либо в симуляционном центре. Если у клиента нет ни своей клиники, ни договора с медорганизацией — программу не реализовать. Это первый вопрос по медицинским кейсам.",c:"check"},ped:{t:"Преподаватели с профильным медицинским или фармацевтическим образованием, действующей аккредитацией специалиста и стажем по специальности. Требования жёстче, чем в обычном ДПО.",c:"check"}},
+ groups:[
+  {g:"Хирургические специальности",med:["Хирургия","Детская хирургия","Нейрохирургия","Сердечно-сосудистая хирургия","Челюстно-лицевая хирургия","Торакальная хирургия","Пластическая хирургия","Колопроктология","Урология","Детская урология-андрология","Травматология и ортопедия","Онкология","Детская онкология","Детская онкология-гематология","Эндоскопия","Операционное дело","Анестезиология-реаниматология","Анестезиология и реаниматология"]},
+  {g:"Терапевтические специальности",med:["Терапия","Общая врачебная практика (семейная медицина)","Общая практика","Кардиология","Детская кардиология","Гастроэнтерология","Пульмонология","Нефрология","Эндокринология","Детская эндокринология","Гематология","Ревматология","Аллергология и иммунология","Инфекционные болезни","Фтизиатрия","Гериатрия","Неврология","Дерматовенерология","Косметология","Офтальмология","Оториноларингология","Сурдология-оториноларингология","Акушерство и гинекология","Профпатология","Токсикология","Генетика"]},
+  {g:"Педиатрия и неонатология",med:["Педиатрия","Неонатология"]},
+  {g:"Психиатрия и наркология",med:["Психиатрия","Психиатрия-наркология","Наркология","Психотерапия","Судебно-психиатрическая экспертиза"]},
+  {g:"Стоматология",med:["Стоматология","Стоматология детская","Стоматология общей практики","Стоматология терапевтическая","Стоматология хирургическая","Стоматология ортопедическая","Стоматология профилактическая","Ортодонтия","Стоматологическое дело"]},
+  {g:"Диагностика",med:["Ультразвуковая диагностика","Функциональная диагностика","Рентгенология","Радиология","Радиотерапия","Рентгенэндоваскулярные диагностика и лечение","Медицинская оптика"]},
+  {g:"Лабораторная служба",med:["Лабораторная диагностика","Клиническая лабораторная диагностика","Лабораторная генетика","Лабораторное дело","Санитарно-гигиенические лабораторные исследования","Медицинская микробиология","Бактериология","Вирусология","Паразитология","Энтомология","Патологическая анатомия","Гистология","Медицинская биохимия","Медицинская биофизика","Трансфузиология"]},
+  {g:"Гигиена и эпидемиология",med:["Эпидемиология","Эпидемиология (паразитология)","Дезинфектология","Дезинфекционное дело","Общая гигиена","Гигиена и санитария","Гигиена труда","Гигиена питания","Гигиена детей и подростков","Коммунальная гигиена","Радиационная гигиена","Гигиеническое воспитание","Медико-профилактическое дело","Социальная гигиена и организация госсанэпидслужбы"]},
+  {g:"Сестринское дело и среднее звено",med:["Сестринское дело","Сестринское дело в педиатрии","Сестринское дело в косметологии","Реабилитационное сестринское дело","Организация сестринского дела","Управление сестринской деятельностью","Акушерское дело","Лечебное дело","Медицинский массаж"]},
+  {g:"Реабилитация и физическая медицина",med:["Физическая и реабилитационная медицина","Физиотерапия","Лечебная физкультура","Лечебная физкультура и спортивная медицина","Мануальная терапия","Рефлексотерапия","Остеопатия","Диетология"]},
+  {g:"Скорая помощь и особые условия",med:["Скорая медицинская помощь","Скорая и неотложная помощь","Авиационная и космическая медицина","Водолазная медицина","Медико-социальная помощь"]},
+  {g:"Экспертиза и организация здравоохранения",med:["Медико-социальная экспертиза","Судебно-медицинская экспертиза","Организация здравоохранения и общественное здоровье","Медицинская статистика","Медицинская кибернетика"]},
+  {g:"Фармация",med:["Фармация","Фармацевтическая технология","Фармацевтическая химия и фармакогнозия","Управление и экономика фармации","Клиническая фармакология"]}]
+},
+{
+ code:"Н-15",name:"Социальная защита инвалидов",reg:"Минтруд России",status:"typ",
+ subtypes:"ДПО — ПК и ПП",
+ kw:"инвалиды социальная защита реабилитация абилитация мсэ медико-социальная экспертиза сопровождаемая занятость профориентация дети-инвалиды соцзащита",
+ meaning:"Восемь типовых программ Минтруда, большинство утверждено в 2025–2026 годах — зона активно развивается. Тематика: медико-социальная экспертиза и комплексная реабилитация и абилитация инвалидов.",
+ flags:["Заказчик почти всегда бюджетный: учреждения соцзащиты и реабилитационные центры. Значит закупки — лицензия нужна к дате подачи заявки.","Нормативка свежая и продолжает обновляться: три приказа за последний год. Годовое сопровождение здесь не допродажа, а необходимость.","Программа по медико-социальной экспертизе граничит с медицинской зоной — проверить дополнительные условия."],
+ ask:["Направление — медико-социальная экспертиза или комплексная реабилитация и абилитация?","Заказчик государственное учреждение? Есть ли привязка к срокам закупок?","Нужна переподготовка или только повышение квалификации?"],
+ offer:"Растущая зона с бюджетным заказчиком. Продавать вместе с годовым сопровождением: без него программы клиента устареют за сезон.",
+ acts:[{t:"Приказ Минтруда России от 29.09.2025 № 578н"},{t:"Приказ Минтруда России от 02.07.2026 № 280н"},{t:"Приказ Минтруда России от 06.10.2025 № 591н"},{t:"Приказ Минтруда России от 25.09.2025 № 574н"}],
+ url:"https://www.consultant.ru/document/cons_doc_LAW_142304/ace79f36a7208cf9a9f16240f99ce7e1b403191d/",
+ req:{form:{t:"Дистант допустим. Часть программ строится на разборе практических кейсов.",c:"check"},prac:{t:"Возможна стажировка в реабилитационной организации или учреждении МСЭ. Уточнять по конкретной программе.",c:"check"},ped:{t:"Специалисты с опытом работы в медико-социальной экспертизе и комплексной реабилитации.",c:"check"}},
+ groups:[
+  {g:"Медико-социальная экспертиза",p:[
+   {k:"ПП",t:"Медико-социальная экспертиза",a:"Приказ Минтруда России от 29.09.2025 № 578н",u:"https://www.consultant.ru/document/cons_doc_LAW_540752/c4a70b9bb79ff2d682fc5db3fc234f1e5aae0ba5/#dst100009"}]},
+  {g:"Реабилитация и абилитация инвалидов",p:[
+   {k:"ПК",t:"Специалисты, оказывающие услуги по профессиональной ориентации инвалидов",a:"Приказ Минтруда России от 02.07.2026 № 280н",u:"https://www.consultant.ru/document/cons_doc_LAW_541060/f95ed0844a6bed02eb0e0391a922ed09a8aebd57/#dst100013"},
+   {k:"ПК",t:"Специалисты, оказывающие услуги по профессиональной ориентации детей-инвалидов в возрасте 14–17 лет",a:"Приказ Минтруда России от 02.07.2026 № 280н",u:"https://www.consultant.ru/document/cons_doc_LAW_541060/a2b4375f8457eb491b5dde6e707e70b317f0a012/#dst100208"},
+   {k:"ПК",t:"Специалисты, оказывающие услуги по сопровождаемой трудовой деятельности инвалидов",a:"Приказ Минтруда России от 02.07.2026 № 280н",u:"https://www.consultant.ru/document/cons_doc_LAW_541060/078bd61b083cac33e19e895df543e78cdff79cf7/#dst100403"},
+   {k:"ПК",t:"Специалисты, оказывающие услуги по социальной занятости инвалидов",a:"Приказ Минтруда России от 06.10.2025 № 591н",u:"https://www.consultant.ru/document/cons_doc_LAW_540758/20f6e4660570afa48ba40a0b9b7efdd236457177/#dst100009"},
+   {k:"ПК",t:"Специалисты по организации системы комплексной реабилитации и абилитации инвалидов и детей-инвалидов в субъекте Российской Федерации",a:"Приказ Минтруда России от 25.09.2025 № 574н",u:"https://www.consultant.ru/document/cons_doc_LAW_540753/343040d29f8bbf963ab703cbf440bf5ff8fe0ef7/#dst100179"},
+   {k:"ПК",t:"Специалисты по организации оказания услуг по основным направлениям комплексной реабилитации и абилитации в реабилитационной организации",a:"Приказ Минтруда России от 25.09.2025 № 574н",u:"https://www.consultant.ru/document/cons_doc_LAW_540753/698b866ca571bf443ce345601ff0ecf6bc271e11/#dst100012"},
+   {k:"ПК",t:"Специалисты по оказанию услуг по комплексной социальной реабилитации и абилитации инвалидов и детей-инвалидов",a:"Приказ Минтруда России от 25.09.2025 № 574н",u:"https://www.consultant.ru/document/cons_doc_LAW_540753/f4b2e63abcae8b854a1b2620aca854f6abfa104b/#dst100363"}]}]
+},
+{
+ code:"Н-16",name:"Государственная национальная политика",reg:"ФАДН России",status:"typ",
+ subtypes:"ДПО — повышение квалификации",
+ kw:"национальная политика фадн госслужащие муниципальные служащие межнациональные отношения",
+ meaning:"Четыре типовые программы повышения квалификации, утверждённые ФАДН в 2026 году. Слушатели — только государственные и муниципальные служащие, значит заказчик бюджетный и работа идёт через закупки.",
+ flags:["Круг слушателей задан жёстко. Коммерческим клиентам эти программы не подойдут.","Заказ через закупки — срок лицензирования считать от даты подачи заявки заказчиком.","Четыре программы близки по названиям — уточнять, какая указана в техническом задании."],
+ ask:["Кто заказчик: орган власти, подведомственное учреждение?","Какая из четырёх программ указана в техническом задании?","К какой дате нужна лицензия для участия в закупке?"],
+ offer:"Узкая зона с бюджетным заказчиком. Ключевой вопрос — дата закупки: если срок меньше стандартного, честно сказать до подписания договора.",
+ acts:[{t:"Приказ ФАДН России от 02.03.2026 № 28"}],
+ url:"https://www.consultant.ru/document/cons_doc_LAW_142304/262ea718337d14ae2d3beaa4fbc490252c4145f8/",
+ req:{form:{t:"Дистант допустим.",c:"check"},prac:{t:"Практическая подготовка, как правило, не требуется.",c:"check"},ped:{t:"Специалисты в сфере государственного управления и межнациональных отношений.",c:"check"}},
+ groups:[{g:"Государственные и муниципальные служащие",p:[
+  {k:"ПК",t:"Управление в сфере государственной национальной политики Российской Федерации",a:"Приказ ФАДН России от 02.03.2026 № 28"},
+  {k:"ПК",t:"Реализация государственной национальной политики Российской Федерации",a:"Приказ ФАДН России от 02.03.2026 № 28"},
+  {k:"ПК",t:"Актуальные вопросы реализации государственной национальной политики в субъектах Российской Федерации",a:"Приказ ФАДН России от 02.03.2026 № 28"},
+  {k:"ПК",t:"Управление в сфере национальной политики",a:"Приказ ФАДН России от 02.03.2026 № 28"}]}]
+},
+{
+ code:"Н-17",name:"Противодействие коррупции",reg:"Минтруд России",status:"typ",
+ subtypes:"ДПО — повышение квалификации",
+ kw:"коррупция антикоррупция противодействие коррупции комплаенс конфликт интересов госслужащие антикоррупционная экспертиза подкуп",
+ meaning:"Семь типовых программ повышения квалификации одним приказом Минтруда. Важная особенность: программа «Предупреждение коррупции в организациях» адресована не только госслужащим — обязанность принимать антикоррупционные меры лежит и на коммерческих организациях. Это даёт зоне широкий рынок.",
+ flags:["Семь программ разные по адресату: часть для госслужащих, часть для организаций. Продавать «курс по антикоррупции вообще» нельзя.","Приказ ограничен по сроку — учитывать при планировании набора на 2029 год.","Клиент из коммерческого сектора часто не знает, что обязанность его касается. Не повод давить, но повод объяснить."],
+ ask:["Кого обучаете: государственных служащих или сотрудников коммерческих организаций?","Какая из семи программ нужна?","Планируете участие в закупках или обучение по прямым договорам?"],
+ offer:"Одна из самых широких по рынку зон: и бюджетный, и коммерческий заказчик. Программы типовые, методическая работа минимальна — хорошая маржинальность. Проверить, не нужны ли сразу несколько программ.",
+ acts:[{t:"Приказ Минтруда России от 31.05.2022 № 331н",until:"2029-03-01"}],
+ url:"https://www.consultant.ru/document/cons_doc_LAW_142304/30b765e5326f4dd4f11c70d10db83e4f103b68ad/",
+ req:{form:{t:"Полностью дистанционно. Самая простая зона по требованиям к реализации.",c:"check"},prac:{t:"Не требуется.",c:"check"},ped:{t:"Юристы и специалисты по профилактике коррупционных и иных правонарушений.",c:"check"}},
+ groups:[
+  {g:"Государственная и муниципальная служба",p:[
+   {k:"ПК",t:"Основы профилактики коррупции",a:"Приказ Минтруда России от 31.05.2022 № 331н",u:"https://www.consultant.ru/document/cons_doc_LAW_426340/3bdfc90307c9dc440c6c8606a0db5c4409789513/#dst100018"},
+   {k:"ПК",t:"Функции подразделений по профилактике коррупционных и иных правонарушений",a:"Приказ Минтруда России от 31.05.2022 № 331н",u:"https://www.consultant.ru/document/cons_doc_LAW_426340/73b114a98ffd9bb9fbf967317e48b6269650628f/#dst100189"},
+   {k:"ПК",t:"Антикоррупционная экспертиза нормативных правовых актов и их проектов",a:"Приказ Минтруда России от 31.05.2022 № 331н",u:"https://www.consultant.ru/document/cons_doc_LAW_426340/97e23dad7b3fc705cf0dd8bf3398b3e52bbe31d6/#dst101048"},
+   {k:"ПК",t:"Деятельность комиссии по соблюдению требований к служебному поведению и урегулированию конфликта интересов",a:"Приказ Минтруда России от 31.05.2022 № 331н",u:"https://www.consultant.ru/document/cons_doc_LAW_426340/280888a2c1a4358de2b229d6ea82172dde96072b/#dst101205"},
+   {k:"ПК",t:"Требование о предотвращении и урегулировании конфликта интересов в публичном управлении",a:"Приказ Минтруда России от 31.05.2022 № 331н",u:"https://www.consultant.ru/document/cons_doc_LAW_426340/35ff8578cf95a92ad4175e3618c26597be1098c5/#dst101572"}]},
+  {g:"Организации",p:[
+   {k:"ПК",t:"Предупреждение коррупции в организациях",a:"Приказ Минтруда России от 31.05.2022 № 331н",u:"https://www.consultant.ru/document/cons_doc_LAW_426340/0bef111582014edb8130467ea355fd48ca4be318/#dst100605"},
+   {k:"ПК",t:"Вопросы выявления и предотвращения случаев подкупа иностранных должностных лиц, фактов составления ложной отчётности",a:"Приказ Минтруда России от 31.05.2022 № 331н",u:"https://www.consultant.ru/document/cons_doc_LAW_426340/44330c873478d160fa264b755ec50b2774ad77b9/#dst101389"}]}]
+},
+{
+ code:"Н-18",name:"Смежные темы — регулируются отдельно",reg:"разные регуляторы",status:"ext",
+ subtypes:"уточняется",
+ kw:"охрана труда первая помощь энергетика электробезопасность педагогика антитеррор гостайна хассп пищевая безопасность бдд безопасность дорожного движения экологическая безопасность",
+ alert:"Проект перечня, составленный АРМА. В справочнике КонсультантПлюс этих тем нет — их регулирование живёт в других документах. До проверки юристом использовать только как сигнал «нужна консультация».",
+ meaning:"Отсутствие темы в разделе III не означает, что она свободна. Есть темы, где требования к содержанию заданы другими актами: порядками обучения, профессиональными стандартами, отраслевыми правилами. Менеджер должен уметь их узнать и не продавать по стандартному сценарию.",
+ flags:["Не называть срок и цену по этим темам без юриста.","Не говорить клиенту, что раз темы нет в перечне, значит требований нет.","Если клиент планирует несколько смежных тем — состав лицензии продумать заранее."],
+ ask:["Тема точно из этого списка? Тогда я уточню у юриста и вернусь с точным ответом.","Планируете смежные темы в будущем?","Есть ли уже отказы или замечания проверяющих по этой теме?"],
+ offer:"Сильный повод предложить расширенный пакет: если клиент планирует несколько смежных тем, подвиды лицензии нужно закладывать сразу, а не доделывать потом.",
+ acts:[],
+ url:"https://www.consultant.ru/document/cons_doc_LAW_142304/2efd3766a790bfb516667ba5aff54572f15f3f24/",
+ req:{form:{t:"Зависит от темы и устанавливается не разделом III. Пример: обучение по охране труда с применением средств индивидуальной защиты предполагает практическую отработку, первая помощь — работу на манекенах-тренажёрах.",c:"check"},prac:{t:"Определяется отраслевым регулированием. По этим темам вопрос о практике задавать юристу до озвучивания срока и цены.",c:"check"},ped:{t:"Определяется отраслевым регулированием и профессиональными стандартами. Уточнять у юриста.",c:"check"}},
+ groups:[{g:"Требуют отдельной проверки",p:[
+  {k:"?",t:"Охрана труда",a:"Регулируется отдельным порядком обучения; требуется внесение организации в реестр Минтруда"},
+  {k:"?",t:"Первая помощь",a:"Отдельные требования к содержанию и к преподавателям"},
+  {k:"?",t:"Электробезопасность и энергетика",a:"Правила работы в электроустановках, проверка знаний Ростехнадзора"},
+  {k:"?",t:"Педагогическое образование и переподготовка педагогов",a:"Содержание задаётся профессиональными стандартами"},
+  {k:"?",t:"Безопасность дорожного движения, ответственные за БДД",a:"Отдельное регулирование Минтранса"},
+  {k:"?",t:"Пищевая безопасность и ХАССП",a:"Отдельное регулирование"},
+  {k:"?",t:"Антитеррористическая защищённость",a:"Отдельное регулирование"},
+  {k:"?",t:"Работа со сведениями, составляющими государственную тайну",a:"Отдельное регулирование"}]}]
+},
+{
+ code:"Н-19",name:"Всё остальное — свободная разработка",reg:"нет отраслевого регулятора",status:"free",
+ subtypes:"ДПО, дополнительное образование, профессиональное обучение — по ситуации",
+ kw:"маркетинг бухгалтерия финансы психология фитнес массаж парикмахер бьюти ногти брови кулинария it программирование дизайн репетитор языки менеджмент hr коучинг астрология таро сммм",
+ meaning:"Сюда попадает большинство клиентов АРМА: маркетинг, бухгалтерия, IT, психология, бьюти, языки, менеджмент. Обязательных типовых или примерных программ нет — организация разрабатывает программу самостоятельно, содержание и часы определяет сама. С точки зрения лицензии это не проще: состав лицензионного комплекта тот же.",
+ flags:["Не говорить клиенту «раз программы нет, значит и лицензия не нужна». Лицензируется вид деятельности, а не конкретная программа.","Проверить пограничные темы: охрана труда, первая помощь, экология, педагогика.","Профессиональные стандарты могут задавать содержание даже там, где типовой программы нет."],
+ ask:["Чему конкретно обучаете и какой документ выдаёте?","Есть ли у слушателей СПО или ВО?","Дистант, очно или смешанно?","Планируете смежные темы, которые могут оказаться регулируемыми?"],
+ offer:"Базовый сценарий продажи. Разработка программы — наша работа и часть тарифа: аргумент против конкурентов, которые отдают методику клиенту.",
+ acts:[],
+ url:"https://www.consultant.ru/document/cons_doc_LAW_142304/2efd3766a790bfb516667ba5aff54572f15f3f24/",
+ req:{form:{t:"Определяет сама организация. Но заявленная форма должна соответствовать лицензии и фактической материальной базе: если в программе написано «очно», лицензирующий орган проверит помещение.",c:"rule"},prac:{t:"Если организация сама заложила в программу практику — под неё нужна база или договор с предприятием. Это частая ошибка: практику пишут в программу, а обеспечить не могут.",c:"rule"},ped:{t:"Общие квалификационные требования к педагогическим работникам и соответствие профилю программы. Проверять до подачи документов, а не после.",c:"rule"}},
+ groups:[{g:"Свободная разработка",p:[
+  {k:"—",t:"Тема клиента не входит ни в одну регулируемую сферу",a:"Типовая или примерная программа не установлена"}]}]
+}
+];
+/* БЛОК ДАННЫХ — КОНЕЦ */
+
+/* ===================== ЛОГИКА (не редактировать) ===================== */
+const ST={typ:{b:"b-typ",a:"a-typ",short:"ТИПОВАЯ",v:"Да, программа типовая",
+  s:"Содержание задано приказом. Организация разрабатывает свою программу в соответствии с типовой — сама придумать состав и часы не может."},
+ prim:{b:"b-prim",a:"a-prim",short:"ПРИМЕРНАЯ",v:"Программа примерная",
+  s:"Не типовая, но и не свободная. Примерная программа задаёт ориентир: организация разрабатывает свою в соответствии с ней и ссылается на неё в документах."},
+ free:{b:"b-free",a:"a-free",short:"СВОБОДНАЯ",v:"Нет, программа не типовая",
+  s:"Обязательной типовой или примерной программы по теме не установлено. Содержание и часы организация определяет сама. На состав лицензионного комплекта это не влияет."},
+ ext:{b:"b-ext",a:"a-ext",short:"ОТДЕЛЬНО",v:"В этом перечне темы нет — но она регулируется",
+  s:"Требования заданы не разделом III, а другими актами. Срок и цену без юриста не называть."}};
+
+const TODAY=new Date(SVERKA+"T00:00:00"), MS=864e5;
+const fmt=d=>{const p=d.split("-");return p[2]+"."+p[1]+"."+p[0];};
+function actState(a){
+  if(a.from){const f=new Date(a.from+"T00:00:00");if(f>TODAY)return{cls:"future",msg:"вступает в силу "+fmt(a.from)};}
+  if(a.until){const u=new Date(a.until+"T00:00:00"),d=Math.round((u-TODAY)/MS);
+    if(d<0)return{cls:"expired",msg:"срок истёк "+fmt(a.until)+", обязательна сверка"};
+    if(d<=GORIZONT)return{cls:"soon",msg:"действует до "+fmt(a.until)+", осталось "+d+" дн."};
+    return{cls:"",msg:"действует до "+fmt(a.until)};}
+  return{cls:"",msg:""};
+}
+const actByTitle=(dir,t)=>(dir.acts||[]).find(a=>a.t===t);
+function dirChanges(d){const r=[];(d.acts||[]).forEach(a=>{const s=actState(a);if(s.cls)r.push({cls:s.cls,text:a.t+" — "+s.msg});});return r;}
+const dirCrit=d=>dirChanges(d).some(c=>c.cls==="expired"||c.cls==="soon");
+
+/* плоский индекс программ */
+const PROGRAMS=[];
+DIRECTIONS.forEach((d,di)=>{
+  d.groups.forEach((g,gi)=>{
+    if(g.med){
+      g.med.forEach((m,pi)=>PROGRAMS.push({id:di+"-"+gi+"-"+pi,di,gi,pi,dir:d,grp:g.g,
+        k:"ПК/ПП",t:"Специальность «"+m+"»",a:"Приказы Минздрава России, 2026 г.",med:true}));
+    } else {
+      g.p.forEach((p,pi)=>PROGRAMS.push({id:di+"-"+gi+"-"+pi,di,gi,pi,dir:d,grp:g.g,k:p.k,t:p.t,a:p.a,u:p.u}));
+    }
+  });
+});
+document.getElementById("cnt").textContent=PROGRAMS.length;
+document.getElementById("dcnt").textContent=DIRECTIONS.length;
+
+let curId=null, openDir=null, acList=[], acCur=-1;
+
+const norm=s=>s.toLowerCase().replace(/ё/g,"е");
+function hl(text,q){
+  if(!q)return esc(text);
+  const n=norm(text),i=n.indexOf(q);
+  if(i<0)return esc(text);
+  return esc(text.slice(0,i))+"<mark>"+esc(text.slice(i,i+q.length))+"</mark>"+esc(text.slice(i+q.length));
+}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+
+function search(raw){
+  const q=norm(raw.trim());
+  if(!q)return[];
+  const score=p=>{
+    const t=norm(p.t),d=norm(p.dir.name),g=norm(p.grp),k=norm(p.dir.kw||""),a=norm(p.a||"");
+    if(t.startsWith(q))return 0;
+    if(t.includes(" "+q))return 1;
+    if(t.includes(q))return 2;
+    if(d.includes(q)||g.includes(q))return 3;
+    if(k.includes(q))return 4;
+    if(a.includes(q))return 5;
+    return 99;
+  };
+  return PROGRAMS.map(p=>({p,s:score(p)})).filter(x=>x.s<99).sort((a,b)=>a.s-b.s).slice(0,14).map(x=>x.p);
+}
+
+function renderAC(raw){
+  const ac=document.getElementById("ac"),inp=document.getElementById("q");
+  const q=norm(raw.trim());
+  if(!q){ac.hidden=true;inp.setAttribute("aria-expanded","false");acList=[];return;}
+  acList=search(raw);acCur=-1;
+  if(!acList.length){
+    ac.innerHTML='<div class="none"><b>Такой программы в перечне нет.</b>Это самый частый случай: обязательной типовой программы по теме клиента не установлено, программу разрабатываем сами. Проверьте только смежные темы.<button id="acFree">Открыть «Всё остальное — свободная разработка»</button></div>';
+    ac.hidden=false;inp.setAttribute("aria-expanded","true");
+    document.getElementById("acFree").addEventListener("click",()=>{
+      const idx=DIRECTIONS.findIndex(d=>d.status==="free");
+      select(idx+"-0-0");closeAC();
+    });
+    return;
+  }
+  let h="",last="";
+  acList.forEach((p,i)=>{
+    const key=p.dir.name;
+    if(key!==last){h+='<div class="grp">'+esc(key)+'</div>';last=key;}
+    h+='<button class="it" role="option" data-i="'+i+'"><span class="t">'+
+       '<span class="badge '+ST[p.dir.status].b+'">'+ST[p.dir.status].short+'</span>'+hl(p.t,q)+'</span>'+
+       '<span class="m">'+esc(p.k)+' · '+esc(p.grp)+'</span></button>';
+  });
+  ac.innerHTML=h;ac.hidden=false;inp.setAttribute("aria-expanded","true");
+  ac.querySelectorAll(".it").forEach(b=>b.addEventListener("click",()=>{select(acList[+b.dataset.i].id);closeAC();}));
+}
+function closeAC(){const ac=document.getElementById("ac");ac.hidden=true;document.getElementById("q").setAttribute("aria-expanded","false");acCur=-1;}
+function moveAC(step){
+  if(document.getElementById("ac").hidden||!acList.length)return;
+  acCur=(acCur+step+acList.length)%acList.length;
+  const items=document.querySelectorAll("#ac .it");
+  items.forEach(x=>x.classList.remove("cur"));
+  const el=items[acCur];if(el){el.classList.add("cur");el.scrollIntoView({block:"nearest"});}
+}
+
+function renderTree(){
+  const t=document.getElementById("tree");
+  let h='<div class="tree-h">Направления → поднаправления → программы</div>';
+  DIRECTIONS.forEach((d,di)=>{
+    const cnt=d.groups.reduce((s,g)=>s+(g.med?g.med.length:g.p.length),0);
+    h+='<div class="dir'+(openDir===di?" open":"")+'" data-di="'+di+'">'+
+       '<button><span class="dcode">'+(dirCrit(d)?'<span class="dot"></span>':'')+d.code+' · '+ST[d.status].short+'</span>'+
+       '<span class="dname">'+esc(d.name)+'</span><span class="dn">'+esc(d.reg)+' · '+cnt+' прогр.</span></button><div class="groups">';
+    d.groups.forEach((g,gi)=>{
+      h+='<div class="grp-h">'+esc(g.g)+'</div>';
+      const arr=g.med?g.med.map((m,pi)=>({id:di+"-"+gi+"-"+pi,k:"ПК/ПП",t:"Специальность «"+m+"»"}))
+                     :g.p.map((p,pi)=>({id:di+"-"+gi+"-"+pi,k:p.k,t:p.t}));
+      arr.forEach(p=>{h+='<button class="prow'+(curId===p.id?" sel":"")+'" data-id="'+p.id+'"><span class="k">'+esc(p.k)+'</span>'+esc(p.t)+'</button>';});
+    });
+    h+='</div></div>';
+  });
+  t.innerHTML=h;
+  t.querySelectorAll(".dir>button").forEach(b=>b.addEventListener("click",()=>{
+    const di=+b.parentElement.dataset.di;openDir=(openDir===di?null:di);renderTree();
+  }));
+  t.querySelectorAll(".prow").forEach(b=>b.addEventListener("click",()=>select(b.dataset.id)));
+}
+
+function select(id){
+  const p=PROGRAMS.find(x=>x.id===id);if(!p)return;
+  curId=id;openDir=p.di;renderTree();renderCard(p);
+  document.getElementById("card").scrollIntoView({block:"nearest",behavior:"smooth"});
+}
+
+function renderCard(p){
+  const d=p.dir,st=ST[d.status],changes=dirChanges(d);
+  const act=actByTitle(d,p.a),as=act?actState(act):{cls:"",msg:""};
+  let h='<article class="card">';
+  h+='<div class="answer '+st.a+'"><div class="verdict">'+st.v+'</div><div class="vsub">'+st.s+'</div></div>';
+  h+='<div class="pname"><div class="crumbs">'+esc(d.code)+' · '+esc(d.name)+' › '+esc(p.grp)+'</div><div class="n">'+esc(p.t)+'</div></div>';
+  h+='<div class="facts">'+
+     '<div class="fact"><div class="l">Вид программы</div><div class="v">'+esc(p.k)+'</div></div>'+
+     '<div class="fact"><div class="l">Регулятор</div><div class="v">'+esc(d.reg)+'</div></div>'+
+     '<div class="fact"><div class="l">Подвид лицензии</div><div class="v">'+esc(d.subtypes)+'</div></div>'+
+     '<div class="fact"><div class="l">Основание</div><div class="v">'+esc(p.a)+(as.msg?' <span style="color:var(--muted)">('+as.msg+')</span>':'')+'</div></div>'+
+     '</div>';
+  if(p.med&&d.medNote)h+='<div class="alert"><b>По этой специальности</b>'+esc(d.medNote)+'</div>';
+  if(d.alert)h+='<div class="alert'+(dirCrit(d)?" crit":"")+'"><b>Внимание</b>'+esc(d.alert)+'</div>';
+  if(changes.length)h+='<div class="alert'+(dirCrit(d)?" crit":"")+'"><b>Сроки нормативных актов</b><ul style="margin:5px 0 0;padding-left:18px">'+
+     changes.map(c=>'<li>'+esc(c.text)+'</li>').join("")+'</ul></div>';
+
+  h+='<div class="body">';
+  h+='<div class="blk"><h3>Что это значит для сделки</h3><p>'+esc(d.meaning)+'</p></div>';
+  if(d.req){
+    const SRC={check:{c:"check",l:"рабочая версия — сверить с текстом приказа"},rule:{c:"",l:"общее правило законодательства"},src:{c:"",l:"из текста приказа"}};
+    const row=(lab,o)=>{const m=SRC[o.c]||SRC.check;
+      return '<div class="r"><div class="rl">'+lab+'</div><div class="rv">'+esc(o.t)+
+             '<span class="src '+m.c+'">'+m.l+'</span></div></div>';};
+    h+='<div class="blk"><h3>Требования к реализации программы</h3><div class="req">'+
+       row("Форма обучения",d.req.form)+row("Практика",d.req.prac)+row("Педагоги",d.req.ped)+
+       '</div></div>';
+  }
+  h+='<div class="blk"><h3>Красные флаги</h3><ul class="flag">'+d.flags.map(f=>'<li>'+esc(f)+'</li>').join("")+'</ul></div>';
+  h+='<div class="blk"><h3>Спросить у клиента</h3><ul class="ask">'+d.ask.map(f=>'<li>'+esc(f)+'</li>').join("")+'</ul></div>';
+  h+='<div class="blk"><h3>Что предлагаем</h3><p>'+esc(d.offer)+'</p></div>';
+
+  const sib=PROGRAMS.filter(x=>x.di===p.di&&x.gi===p.gi&&x.id!==p.id).slice(0,10);
+  if(sib.length)h+='<div class="blk"><h3>Рядом в этом же поднаправлении</h3><div class="sib">'+
+     sib.map(s=>'<button data-id="'+s.id+'">'+esc(s.k)+' · '+esc(s.t.length>70?s.t.slice(0,70)+"…":s.t)+'</button>').join("")+'</div></div>';
+
+  const srcUrl=p.u||d.url, srcLbl=p.u?"Открыть приказ по этой программе":"Открыть раздел справочника";
+  h+='<div class="actions"><button class="btn primary" id="cp">Скопировать для CRM</button>'+
+     '<a class="btn" href="'+srcUrl+'" target="_blank" rel="noopener">'+srcLbl+'</a>'+
+     (p.u?'':'<a class="btn" href="'+d.url+'" target="_blank" rel="noopener" hidden></a>')+
+     '<span class="ok" id="ok" hidden>Скопировано</span></div>';
+  h+='<div class="meta">Сверено '+fmt(SVERKA)+' · интерпретационные блоки юристом не утверждены · не является правовым заключением</div>';
+  h+='</div></article>';
+  document.getElementById("card").innerHTML=h;
+
+  document.querySelectorAll(".sib button").forEach(b=>b.addEventListener("click",()=>select(b.dataset.id)));
+  document.getElementById("cp").addEventListener("click",()=>{
+    const txt=["Проверка программы — "+d.code,
+      "Программа: "+p.t,
+      "Вид: "+p.k,
+      "Вывод: "+st.v,
+      "Направление: "+d.name+" › "+p.grp,
+      "Регулятор: "+d.reg,
+      "Подвид лицензии: "+d.subtypes,
+      "Основание: "+p.a+(as.msg?" ("+as.msg+")":""),
+      d.alert?("Внимание: "+d.alert):"",
+      changes.length?("Сроки: "+changes.map(c=>c.text).join("; ")):"",
+      d.req?("Форма обучения: "+d.req.form.t):"",
+      d.req?("Практика: "+d.req.prac.t):"",
+      d.req?("Педагоги: "+d.req.ped.t):"",
+      "Спросить у клиента: "+d.ask.join(" / "),
+      (p.u?("Приказ по программе: "+p.u):("Источник: "+d.url+" — прямой ссылки на приказ нет, найти в разделе")),
+      "Данные сверены "+fmt(SVERKA)+". Не является правовым заключением."].filter(Boolean).join("\n");
+    const ok=document.getElementById("ok");
+    navigator.clipboard.writeText(txt).then(()=>{ok.textContent="Скопировано";ok.hidden=false;setTimeout(()=>ok.hidden=true,2200);})
+    .catch(()=>{ok.textContent="Не удалось — выделите текст карточки вручную";ok.hidden=false;});
+  });
+}
+
+const inp=document.getElementById("q");
+inp.addEventListener("input",e=>renderAC(e.target.value));
+inp.addEventListener("keydown",e=>{
+  if(e.key==="ArrowDown"){e.preventDefault();moveAC(1);}
+  else if(e.key==="ArrowUp"){e.preventDefault();moveAC(-1);}
+  else if(e.key==="Enter"){if(acCur>=0&&acList[acCur]){e.preventDefault();select(acList[acCur].id);closeAC();}
+    else if(acList.length){e.preventDefault();select(acList[0].id);closeAC();}}
+  else if(e.key==="Escape"){closeAC();}
+});
+inp.addEventListener("focus",e=>{if(e.target.value)renderAC(e.target.value);});
+document.addEventListener("click",e=>{if(!e.target.closest(".searchzone"))closeAC();});
+
+renderTree();
+select(DIRECTIONS.findIndex(d=>d.status==="free")+"-0-0");
+inp.focus();
+</script>
+</body>
+</html>
