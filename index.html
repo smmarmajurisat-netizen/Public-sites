@@ -18,7 +18,6 @@
     </div>
   </noscript>
   <script src="/assets/js/geo-region.js" defer></script>
-  <script src="https://myreviews.dev/widget/dist/verticalWidget.js" defer></script>
   <script>
     (function (){
       var myReviewsInit = function () {
@@ -32,11 +31,16 @@
         }).init();
       };
 
+      var SRC = "https://myreviews.dev/widget/dist/verticalWidget.js";
+      var WIDE = "(min-width: 861px)";
+
       var ready = function () { return !!(window.myReviews && window.myReviews.VerticalWidget); };
+      var bundleReady = function () { return !document.getElementById('__bundler_thumbnail'); };
 
       // До 860px включительно лендинг показывает липкую панель «Получить расчёт»,
-      // и виджет ложится прямо на неё, перекрывая главный CTA. Прячем его на
-      // этой ширине. Границу берём ту же, что у самого лендинга (@media 860/861).
+      // и виджет ложится прямо на неё, перекрывая главный CTA. Границу берём ту
+      // же, что у самого лендинга (@media 860/861). Правило страхует обратный
+      // переход: скрипт уже загружен, а экран сузился.
       // Стиль вставляем из JS: <style> во внешней оболочке погибнет вместе со
       // старым <head> при documentElement.replaceWith.
       var hideOnNarrow = function () {
@@ -47,21 +51,50 @@
         document.head.appendChild(st);
       };
 
-      // Бандл заменяет корневой элемент через documentElement.replaceWith:
-      // виджет, смонтированный раньше, исчезает вместе со старым body.
-      // Поэтому инициализируем РОВНО ОДИН РАЗ и только после распаковки.
-      // Повторные вызовы init() до появления контейнера плодят дубли iframe,
-      // так что «переинициализация по таймеру» здесь не годится.
+      var inited = false;
+      var initOnce = function () {
+        if (inited || !ready()) { return; }
+        inited = true;
+        hideOnNarrow();
+        myReviewsInit();
+      };
+
+      // Скрипт виджета — около 486 КБ. На узких экранах виджет всё равно скрыт,
+      // поэтому там не грузим его вовсе. Подключаем при первом переходе за 861px.
+      // Флаг scriptAdded держит ровно одно подключение, inited — ровно одну
+      // инициализацию: повторные переходы через границу дублей не создают.
+      var scriptAdded = false;
+      var loadWidget = function () {
+        if (scriptAdded) { return; }
+        scriptAdded = true;
+        var s = document.createElement('script');
+        s.src = SRC;
+        s.async = true;
+        s.onload = function () {
+          var n = 0;
+          var t = setInterval(function () {
+            n += 1;
+            initOnce();
+            if (inited || n > 20) { clearInterval(t); }
+          }, 100);
+        };
+        document.head.appendChild(s);
+      };
+
+      // Инициализировать можно только после того, как бандл заменил корневой
+      // элемент: смонтированный раньше виджет исчез бы вместе со старым body.
+      // По той же причине и тег скрипта добавляем в уже новый <head>.
       var attempts = 0;
       var wait = setInterval(function () {
         attempts += 1;
-        var bundleReady = !document.getElementById('__bundler_thumbnail');
-        if ((bundleReady && ready()) || attempts > 133) {
-          clearInterval(wait);
-          if (ready()) { hideOnNarrow(); myReviewsInit(); }
-        }
+        if (!bundleReady() && attempts <= 133) { return; }
+        clearInterval(wait);
+        var mq = window.matchMedia(WIDE);
+        if (mq.matches) { loadWidget(); }
+        var onChange = function (e) { if (e.matches) { loadWidget(); } };
+        if (mq.addEventListener) { mq.addEventListener('change', onChange); }
+        else if (mq.addListener) { mq.addListener(onChange); }
       }, 150);
-
     })()
   </script>
 </head>
