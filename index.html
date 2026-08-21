@@ -18,6 +18,85 @@
     </div>
   </noscript>
   <script src="/assets/js/geo-region.js" defer></script>
+  <script>
+    (function (){
+      var myReviewsInit = function () {
+        new window.myReviews.VerticalWidget({
+          uuid: "20ea881a-3457-4c69-b2f0-316082aab7c1",
+          name: "g2124888",
+          additionalFrame: "button",
+          variant: "default",
+          lang:"ru",
+          widgetId: "0"
+        }).init();
+      };
+
+      var SRC = "https://myreviews.dev/widget/dist/verticalWidget.js";
+      var WIDE = "(min-width: 861px)";
+
+      var ready = function () { return !!(window.myReviews && window.myReviews.VerticalWidget); };
+      var bundleReady = function () { return !document.getElementById('__bundler_thumbnail'); };
+
+      // До 860px включительно лендинг показывает липкую панель «Получить расчёт»,
+      // и виджет ложится прямо на неё, перекрывая главный CTA. Границу берём ту
+      // же, что у самого лендинга (@media 860/861). Правило страхует обратный
+      // переход: скрипт уже загружен, а экран сузился.
+      // Стиль вставляем из JS: <style> во внешней оболочке погибнет вместе со
+      // старым <head> при documentElement.replaceWith.
+      var hideOnNarrow = function () {
+        if (document.getElementById('myreviews-narrow-css')) { return; }
+        var st = document.createElement('style');
+        st.id = 'myreviews-narrow-css';
+        st.textContent = '@media (max-width: 860px){[id^="myReviews__"]{display:none !important}}';
+        document.head.appendChild(st);
+      };
+
+      var inited = false;
+      var initOnce = function () {
+        if (inited || !ready()) { return; }
+        inited = true;
+        hideOnNarrow();
+        myReviewsInit();
+      };
+
+      // Скрипт виджета — около 486 КБ. На узких экранах виджет всё равно скрыт,
+      // поэтому там не грузим его вовсе. Подключаем при первом переходе за 861px.
+      // Флаг scriptAdded держит ровно одно подключение, inited — ровно одну
+      // инициализацию: повторные переходы через границу дублей не создают.
+      var scriptAdded = false;
+      var loadWidget = function () {
+        if (scriptAdded) { return; }
+        scriptAdded = true;
+        var s = document.createElement('script');
+        s.src = SRC;
+        s.async = true;
+        s.onload = function () {
+          var n = 0;
+          var t = setInterval(function () {
+            n += 1;
+            initOnce();
+            if (inited || n > 20) { clearInterval(t); }
+          }, 100);
+        };
+        document.head.appendChild(s);
+      };
+
+      // Инициализировать можно только после того, как бандл заменил корневой
+      // элемент: смонтированный раньше виджет исчез бы вместе со старым body.
+      // По той же причине и тег скрипта добавляем в уже новый <head>.
+      var attempts = 0;
+      var wait = setInterval(function () {
+        attempts += 1;
+        if (!bundleReady() && attempts <= 133) { return; }
+        clearInterval(wait);
+        var mq = window.matchMedia(WIDE);
+        if (mq.matches) { loadWidget(); }
+        var onChange = function (e) { if (e.matches) { loadWidget(); } };
+        if (mq.addEventListener) { mq.addEventListener('change', onChange); }
+        else if (mq.addListener) { mq.addListener(onChange); }
+      }, 150);
+    })()
+  </script>
 </head>
 <body>
   <div id="__bundler_thumbnail">
