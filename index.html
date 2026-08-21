@@ -18,6 +18,39 @@
     </div>
   </noscript>
   <script src="/assets/js/geo-region.js" defer></script>
+  <script src="https://myreviews.dev/widget/dist/verticalWidget.js" defer></script>
+  <script>
+    (function (){
+      var myReviewsInit = function () {
+        new window.myReviews.VerticalWidget({
+          uuid: "20ea881a-3457-4c69-b2f0-316082aab7c1",
+          name: "g2124888",
+          additionalFrame: "button",
+          variant: "default",
+          lang:"ru",
+          widgetId: "0"
+        }).init();
+      };
+
+      var ready = function () { return !!(window.myReviews && window.myReviews.VerticalWidget); };
+
+      // Бандл заменяет корневой элемент через documentElement.replaceWith:
+      // виджет, смонтированный раньше, исчезает вместе со старым body.
+      // Поэтому инициализируем РОВНО ОДИН РАЗ и только после распаковки.
+      // Повторные вызовы init() до появления контейнера плодят дубли iframe,
+      // так что «переинициализация по таймеру» здесь не годится.
+      var attempts = 0;
+      var wait = setInterval(function () {
+        attempts += 1;
+        var bundleReady = !document.getElementById('__bundler_thumbnail');
+        if ((bundleReady && ready()) || attempts > 133) {
+          clearInterval(wait);
+          if (ready()) { myReviewsInit(); }
+        }
+      }, 150);
+
+    })()
+  </script>
 </head>
 <body>
   <div id="__bundler_thumbnail">
