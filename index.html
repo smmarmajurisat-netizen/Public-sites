@@ -34,6 +34,19 @@
 
       var ready = function () { return !!(window.myReviews && window.myReviews.VerticalWidget); };
 
+      // До 860px включительно лендинг показывает липкую панель «Получить расчёт»,
+      // и виджет ложится прямо на неё, перекрывая главный CTA. Прячем его на
+      // этой ширине. Границу берём ту же, что у самого лендинга (@media 860/861).
+      // Стиль вставляем из JS: <style> во внешней оболочке погибнет вместе со
+      // старым <head> при documentElement.replaceWith.
+      var hideOnNarrow = function () {
+        if (document.getElementById('myreviews-narrow-css')) { return; }
+        var st = document.createElement('style');
+        st.id = 'myreviews-narrow-css';
+        st.textContent = '@media (max-width: 860px){[id^="myReviews__"]{display:none !important}}';
+        document.head.appendChild(st);
+      };
+
       // Бандл заменяет корневой элемент через documentElement.replaceWith:
       // виджет, смонтированный раньше, исчезает вместе со старым body.
       // Поэтому инициализируем РОВНО ОДИН РАЗ и только после распаковки.
@@ -45,7 +58,7 @@
         var bundleReady = !document.getElementById('__bundler_thumbnail');
         if ((bundleReady && ready()) || attempts > 133) {
           clearInterval(wait);
-          if (ready()) { myReviewsInit(); }
+          if (ready()) { hideOnNarrow(); myReviewsInit(); }
         }
       }, 150);
 
