@@ -1,0 +1,15 @@
+# Внутренние инструменты АРМА — только по паролю.
+#
+# Файл паролей лежит на хостинге ВНЕ каталога сайта:
+#   /var/www/u3083275/data/.htpasswd-arma-lab
+# deploy-regru.sh его не трогает. Добавить пользователя (по SSH на хостинге):
+#   htpasswd -B /var/www/u3083275/data/.htpasswd-arma-lab имя
+
+AuthType Basic
+AuthName "ARMA internal"
+AuthUserFile /var/www/u3083275/data/.htpasswd-arma-lab
+Require valid-user
+
+<IfModule mod_headers.c>
+  Header set X-Robots-Tag "noindex, nofollow"
+</IfModule>
