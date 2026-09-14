@@ -14,13 +14,14 @@
 # 404 внутри раздела остаётся в разделе.
 ErrorDocument 404 /tipovye-programmy/404.html
 
+# Стили и скрипт (catalog.css, catalog.js) хостинг отдаёт через nginx
+# напрямую, мимо этого файла: срок кэша у них свой — 45 дней, и пароль на них
+# не действует. Поэтому их адреса на страницах несут версию ?v= по
+# содержимому: после выкладки браузер сразу берёт новые файлы. Поведение
+# проверено на хостинге 14.09.2026.
 <IfModule mod_expires.c>
   ExpiresActive On
-  # Перекрывают сроки корневого .htaccess сайта (css и js там — месяц).
-  # Адреса стилей и скрипта несут версию ?v=, поэтому после выкладки
-  # браузер сразу берёт новые файлы.
-  ExpiresByType text/css "access plus 7 days"
-  ExpiresByType application/javascript "access plus 7 days"
+  # Индекс поиска обновляется вместе с данными.
   ExpiresByType application/json "access plus 1 hour"
 </IfModule>
 
@@ -34,6 +35,8 @@ ErrorDocument 404 /tipovye-programmy/404.html
 # ВРЕМЕННО: раздел закрыт паролем до проверки (сборка с --protect).
 # Снимается пересборкой без --protect и обычной выкладкой, не правкой
 # этого файла на сервере. Файл паролей лежит на хостинге вне каталога сайта.
+# Пароль закрывает страницы, индекс поиска и sitemap.xml. catalog.css и
+# catalog.js хостинг отдаёт без пароля (см. выше) — содержания каталога в них нет.
 AuthType Basic
 AuthName "ARMA: tipovye-programmy"
 AuthUserFile /var/www/u3083275/data/.htpasswd-arma-lab
