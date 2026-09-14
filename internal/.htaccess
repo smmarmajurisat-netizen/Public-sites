@@ -1,4 +1,4 @@
-# Внутренние инструменты АРМА — только по паролю.
+# Внутренние инструменты АРМА — только по паролю и только по HTTPS.
 #
 # Файл паролей лежит на хостинге ВНЕ каталога сайта:
 #   /var/www/u3083275/data/.htpasswd-arma-lab
@@ -8,7 +8,17 @@
 AuthType Basic
 AuthName "ARMA internal"
 AuthUserFile /var/www/u3083275/data/.htpasswd-arma-lab
-Require valid-user
+
+# Пароль спрашивается только на https://arma-lab.ru. Проверка пароля в
+# Apache идёт раньше, чем переадресация на HTTPS из корневого .htaccess:
+# без этого условия запрос по http:// или через www получил бы 401, и
+# браузер отправил бы пароль открытым текстом. Такой запрос получает 403,
+# а 403 здесь переадресует на тот же адрес по HTTPS.
+<RequireAll>
+  Require expr "%{HTTP:X-Forwarded-Proto} == 'https' && %{HTTP_HOST} == 'arma-lab.ru'"
+  Require valid-user
+</RequireAll>
+ErrorDocument 403 https://arma-lab.ru%{REQUEST_URI}
 
 <IfModule mod_headers.c>
   Header set X-Robots-Tag "noindex, nofollow"
