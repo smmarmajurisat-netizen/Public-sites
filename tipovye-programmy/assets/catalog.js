@@ -319,6 +319,13 @@
     });
   }
 
+  // Печать: текст пунктов под «Показать текст пункта» должен попасть на бумагу.
+  window.addEventListener('beforeprint', function () {
+    Array.prototype.forEach.call(document.querySelectorAll('details.req__text, details.bd-module__more'), function (node) {
+      node.setAttribute('open', '');
+    });
+  });
+
   document.addEventListener('DOMContentLoaded', function () {
     var filter = document.querySelector('[data-filter-root]');
     if (filter) { initFilter(filter); }
