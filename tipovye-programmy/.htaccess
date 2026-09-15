@@ -31,27 +31,3 @@ ErrorDocument 404 /tipovye-programmy/404.html
     Header set Cache-Control "no-cache"
   </FilesMatch>
 </IfModule>
-
-# ВРЕМЕННО: раздел закрыт паролем до проверки (сборка с --protect).
-# Снимается пересборкой без --protect и обычной выкладкой, не правкой
-# этого файла на сервере. Файл паролей лежит на хостинге вне каталога сайта.
-# Пароль закрывает страницы, индекс поиска и sitemap.xml. catalog.css и
-# catalog.js хостинг отдаёт без пароля (см. выше) — содержания каталога в них нет.
-AuthType Basic
-AuthName "ARMA: tipovye-programmy"
-AuthUserFile /var/www/u3083275/data/.htpasswd-arma-lab
-
-# Пароль спрашивается только на https://arma-lab.ru. Проверка пароля в Apache идёт
-# раньше переадресации на HTTPS из корневого .htaccess: без этого условия
-# запрос по http:// или через www получил бы 401, и браузер отправил бы
-# пароль открытым текстом. Такой запрос получает 403, а 403 переадресует на
-# тот же адрес по HTTPS. Поведение проверено на хостинге 14.09.2026.
-<RequireAll>
-  Require expr "%{HTTP:X-Forwarded-Proto} == 'https' && %{HTTP_HOST} == 'arma-lab.ru'"
-  Require valid-user
-</RequireAll>
-ErrorDocument 403 https://arma-lab.ru%{REQUEST_URI}
-
-<IfModule mod_headers.c>
-  Header set X-Robots-Tag "noindex, nofollow"
-</IfModule>

@@ -789,3 +789,7 @@ details.bd-module__more[open] > .bd-module__head { border-bottom: 1px solid var(
 @media print {
   .req__text-toggle::after, details.bd-module__more > .bd-module__head::after { content: none; }
 }
+
+
+/* Общая оговорка каталога (_meta.disclaimer) — в подвале каждой страницы. */
+.site-footer__disclaimer { margin-top: 24px; max-width: 820px; font-size: 14px; line-height: 1.55; opacity: 0.8; }
