@@ -78,7 +78,7 @@ a:hover { color: var(--arma-red-deep); text-decoration: underline; }
 .wrap { max-width: calc(var(--content-w) + var(--gutter) * 2); margin: 0 auto; padding: 0 var(--gutter); }
 
 /* --- шапка и подвал раздела ------------------------------------------------
-   Заглушка обвязки основного сайта: при встраивании в arma-lab.ru
+   Своя обвязка раздела: при встраивании в сайт
    заменяется на реальные SiteHeader / SiteFooter. Разметка держит габариты
    макета, чтобы отступы раздела не поехали. */
 

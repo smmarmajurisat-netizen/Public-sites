@@ -31,3 +31,12 @@ ErrorDocument 404 /tipovye-programmy/404.html
     Header set Cache-Control "no-cache"
   </FilesMatch>
 </IfModule>
+
+# Раздел переехал на arma-jurist.ru и уходит из поиска на этом адресе (сборка с
+# --deindex). «follow», а не «nofollow»: ссылки внутри раздела робот должен
+# обходить, чтобы увидеть noindex на каждой странице. Путь раздела в
+# robots.txt сайта остаётся открытым — иначе робот noindex не прочитает.
+# Снимается вместе с разделом, когда включается переадресация 301.
+<IfModule mod_headers.c>
+  Header set X-Robots-Tag "noindex, follow"
+</IfModule>
