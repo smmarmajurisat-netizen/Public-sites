@@ -1,5 +1,13 @@
 RewriteEngine On
 
+# Каталог типовых программ переехал на arma-jurist.ru. 301 постранично: путь
+# и параметры сохраняются, каждый старый адрес ведёт на тот же адрес на новом
+# сайте. Выше переадресаций на HTTPS и без www — любой вариант старого адреса
+# уходит на новый одним переходом. Список соответствий — в архиве каталога,
+# server/arma-lab.ru-redirects.tsv.
+RewriteRule ^tipovye-programmy$ https://arma-jurist.ru/tipovye-programmy/ [R=301,L]
+RewriteRule ^tipovye-programmy(/.*)?$ https://arma-jurist.ru/tipovye-programmy$1 [R=301,L]
+
 RewriteCond %{HTTP:X-Forwarded-Proto} !https
 RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
 
@@ -7,8 +15,8 @@ RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
 RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
 
 # Инструмент «Типовая или нет» переехал под пароль на /internal/tipovay/.
-# Публичный адрес ведёт в каталог типовых программ.
-RewriteRule ^tipovay(/.*)?$ https://arma-lab.ru/tipovye-programmy/ [R=301,L]
+# Публичный адрес ведёт в каталог типовых программ — сразу на arma-jurist.ru.
+RewriteRule ^tipovay(/.*)?$ https://arma-jurist.ru/tipovye-programmy/ [R=301,L]
 
 <IfModule mod_expires.c>
   ExpiresActive On

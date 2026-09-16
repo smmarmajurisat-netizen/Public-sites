@@ -5,7 +5,9 @@
 
 User-agent: *
 
-# Каталог типовых программ
+# Каталог типовых программ переехал на arma-jurist.ru. Адреса открыты, чтобы
+# роботы видели 301 на новые. Allow убирается отдельным коммитом, когда 301
+# уже работают.
 Allow: /tipovye-programmy/
 
 # Главная (лендинг) и её ресурсы
@@ -17,5 +19,3 @@ Allow: /favicon-192.png
 Allow: /apple-touch-icon.png
 
 Disallow: /
-
-Sitemap: https://arma-lab.ru/tipovye-programmy/sitemap.xml
