@@ -64,6 +64,12 @@ body {
 }
 
 h1, h2, h3 { margin: 0; font-weight: var(--fw-extrabold); line-height: var(--lh-title); }
+
+/* Атрибут hidden сильнее оформления. Без этого правила класс с собственным
+   display (.empty-state — grid, подсказки поиска — block) перебивает hidden
+   из браузерных стилей, и скрытый блок остаётся на экране: плашка «По этому
+   запросу программ нет» висела на странице направления с непустым списком. */
+[hidden] { display: none !important; }
 p { margin: 0; }
 img, svg { display: block; max-width: 100%; }
 a { color: var(--arma-red); text-decoration: none; }
@@ -296,6 +302,15 @@ a.program-row:hover .program-row__title { color: var(--arma-red-deep); }
 .faq__marker::after { transform: rotate(90deg); }
 .faq__item[open] .faq__marker::after { transform: rotate(0deg); }
 .faq__a { padding: 0 0 24px; max-width: 820px; font-size: 18px; line-height: 1.6; color: var(--arma-ink-700); }
+
+/* Контакты вместо формы: формы сняты вместе с неработающим вебхуком. */
+.contacts-card { display: flex; flex-direction: column; gap: 8px; }
+.contacts-card__phone { font-size: 36px; font-weight: var(--fw-extrabold); line-height: var(--lh-title); color: var(--arma-ink); }
+.contacts-card__phone:hover { color: var(--arma-red); }
+.contacts-card__note { font-size: 15px; color: var(--arma-slate-400); }
+.contacts-card__mail { margin-top: 8px; font-size: 20px; font-weight: var(--fw-bold); }
+.panel--dark .contacts-card__phone { color: var(--arma-pure-white); }
+.panel--dark .contacts-card__note { color: var(--arma-mist); }
 
 .form { display: flex; flex-direction: column; gap: 16px; }
 .form__row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
@@ -640,6 +655,8 @@ a.program-row:hover .program-row__title { color: var(--arma-red-deep); }
   .alpha__note { display: none; }
   .panel, .panel--split { display: block; margin-top: 32px; padding: 24px var(--gutter); margin-left: calc(var(--gutter) * -1); margin-right: calc(var(--gutter) * -1); }
   .panel__title { font-size: 24px; }
+  .contacts-card { margin-top: 20px; }
+  .contacts-card__phone { font-size: 28px; }
   .panel--split .bullets, .panel--split .form { margin-top: 20px; }
   .section { display: block; margin-top: 32px; }
   .section__title { font-size: 22px; margin-bottom: 12px; }

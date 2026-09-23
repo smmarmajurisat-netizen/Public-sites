@@ -234,91 +234,6 @@
   }
 
   /* --- форма заявки ------------------------------------------------------- */
-
-  function initForm(form) {
-    var started = Date.now();
-    var elapsed = form.querySelector('[name="form_elapsed"]');
-    var status = form.querySelector('[data-form-status]');
-    // Идентификатор отправки: если запрос через fetch дошёл до n8n, а ответ
-    // заблокировал браузер, форма уйдёт повторно обычным POST — n8n по этому
-    // полю не создаст второй лид.
-    var submission = form.querySelector('[name="submission_id"]');
-    if (submission && !submission.value) {
-      submission.value = Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
-    }
-
-    function showError(field, message) {
-      var holder = field.closest('.form__field') || field.parentNode;
-      var node = holder.querySelector('.form__error');
-      if (!node) {
-        node = document.createElement('span');
-        node.className = 'form__error';
-        holder.appendChild(node);
-      }
-      node.textContent = message;
-      field.setAttribute('aria-invalid', 'true');
-    }
-
-    function clearErrors() {
-      Array.prototype.forEach.call(form.querySelectorAll('.form__error'), function (node) {
-        node.textContent = '';
-      });
-      Array.prototype.forEach.call(form.querySelectorAll('[aria-invalid]'), function (node) {
-        node.removeAttribute('aria-invalid');
-      });
-    }
-
-    form.addEventListener('submit', function (event) {
-      if (elapsed) { elapsed.value = String(Math.round((Date.now() - started) / 1000)); }
-      clearErrors();
-      var invalid = false;
-      Array.prototype.forEach.call(form.querySelectorAll('[required]'), function (field) {
-        var empty = field.type === 'checkbox' ? !field.checked : !field.value.trim();
-        if (empty) {
-          showError(field, field.type === 'checkbox'
-            ? 'Без согласия на обработку данных заявку отправить нельзя'
-            : 'Заполните поле');
-          invalid = true;
-        }
-      });
-      if (invalid) {
-        event.preventDefault();
-        var first = form.querySelector('[aria-invalid]');
-        if (first) { first.focus(); }
-        return;
-      }
-      if (!window.fetch) { return; }
-      event.preventDefault();
-      var data = new FormData(form);
-      // Приёмник — вебхук n8n на другом домене. По полю transport он отвечает
-      // JSON; обычной отправке без JavaScript — переадресацией на return_to.
-      data.append('transport', 'fetch');
-      fetch(form.action, { method: 'POST', body: data, mode: 'cors', credentials: 'omit' })
-        .then(function (response) {
-          if (!response.ok) { throw new Error('bad status'); }
-          return response.json().catch(function () { return {}; });
-        })
-        .then(function (result) {
-          if (result && result.ok === false) {
-            var note = form.querySelector('.form__error--form');
-            if (!note) {
-              note = document.createElement('p');
-              note.className = 'form__error form__error--form';
-              form.appendChild(note);
-            }
-            note.textContent = 'Не удалось отправить. Проверьте поля и отправьте ещё раз.';
-            return;
-          }
-          form.hidden = true;
-          if (status) {
-            status.hidden = false;
-            status.focus();
-          }
-        })
-        .catch(function () { form.submit(); });
-    });
-  }
-
   // Печать: текст пунктов под «Показать текст пункта» должен попасть на бумагу.
   window.addEventListener('beforeprint', function () {
     Array.prototype.forEach.call(document.querySelectorAll('details.req__text, details.bd-module__more'), function (node) {
@@ -331,6 +246,5 @@
     if (filter) { initFilter(filter); }
     var search = document.querySelector('[data-search-root]');
     if (search) { initSearch(search); }
-    Array.prototype.forEach.call(document.querySelectorAll('[data-lead-form]'), initForm);
   });
 }());
