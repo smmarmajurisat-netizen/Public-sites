@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Навигатор господдержки для образовательного бизнеса | АРМА</title>
+<meta name="description" content="Подберите направления государственной поддержки для вашей образовательной организации: что проверить, куда обращаться и что делать по шагам.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Навигатор господдержки для образовательного бизнеса">
+<meta property="og:description" content="Подберите направления государственной поддержки для вашей образовательной организации: что проверить, куда обращаться и что делать по шагам.">
+<meta property="og:url" content="https://arma-lab.ru/gospodderzhka/">
+<meta property="og:locale" content="ru_RU">
+<link rel="icon" href="/favicon-32.png" sizes="32x32">
+<link rel="preload" href="fonts/nunito-sans-cyrillic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="styles.css">
+<script src="app.js" defer></script>
+</head>
+<body>
+<main id="app" aria-busy="true">
+
+  <!-- Экран 1: старт -->
+  <section id="screen-start" class="screen" aria-labelledby="start-title">
+    <div class="hero">
+      <div class="wrap">
+        <div class="hero__top">
+          <img class="hero__logo" src="logo-arma-light.svg" alt="АРМА" width="100" height="60">
+          <p class="hero__tag"><span class="tag-full">Юридическая компания «АРМА». Лицензирование и сопровождение образовательных организаций</span><span class="tag-short">Юридическая компания АРМА</span></p>
+        </div>
+        <div class="hero__body">
+          <h1 id="start-title">Навигатор господдержки <span>для образовательного бизнеса</span></h1>
+          <p class="hero__lead">Ответьте на 12 вопросов об организации. Мы покажем, какие направления государственной поддержки вам стоит проверить, почему, куда обращаться и что делать по шагам.</p>
+          <div class="hero__cta"><span class="btn--cta-wrap"><button id="btn-start" class="btn btn--cta" type="button">Подобрать направления</button></span></div>
+        </div>
+      </div>
+    </div>
+    <div class="facts-band">
+      <div class="wrap">
+        <div class="facts" style="padding-top:var(--space-7)">
+          <div class="fact"><p class="fact__n">1.</p><p class="fact__t">Расскажите об организации</p><p class="fact__b">Форма, налоги, вид образования, аудитория и планы. Если чего-то не знаете, так и отметьте.</p></div>
+          <div class="fact"><p class="fact__n">2.</p><p class="fact__t">Получите направления</p><p class="fact__b">Покажем направления со статусом и объясним, какие ваши ответы на это повлияли.</p></div>
+          <div class="fact"><p class="fact__n">3.</p><p class="fact__t">Проверьте условия</p><p class="fact__b">В каждой карточке ссылка на норму или страницу фонда, документы и шаги.</p></div>
+        </div>
+        <p class="note">Калькулятор показывает возможные направления поддержки. Условия и решение о поддержке определяет оператор меры, актуальные условия публикуются на официальных сайтах.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Экран 2: шаги с вопросами -->
+  <section id="screen-quiz" class="screen" hidden aria-labelledby="step-title">
+    <div class="progress">
+      <div class="wrap">
+        <div class="progress__row">
+          <img class="progress__logo" src="logo-arma-light.svg" alt="АРМА" width="72" height="43">
+          <p class="progress__count" id="progress-count" aria-live="polite"></p>
+        </div>
+        <ol id="progress-steps" aria-label="Шаги"></ol>
+      </div>
+    </div>
+    <div class="step">
+      <form class="wrap" id="step-form" onsubmit="return false" novalidate>
+        <h2 id="step-title"></h2>
+        <p class="step__sub">Каждый ответ влияет на подбор. Вариант «Не знаю» ничего не исключает: в результате мы подскажем, что уточнить.</p>
+        <div id="step-questions"></div>
+        <p id="step-error" role="alert" class="step__sub"></p>
+        <div class="step__nav">
+          <button id="btn-back" class="btn btn--ghost" type="button">Назад</button>
+          <button id="btn-next" class="btn btn--solid" type="button">Далее</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- Экран 3: результат -->
+  <section id="screen-result" class="screen" hidden aria-labelledby="res-title">
+    <div class="progress no-print">
+      <div class="wrap"><div class="progress__row"><img class="progress__logo" src="logo-arma-light.svg" alt="АРМА" width="72" height="43"><p class="progress__count">Результат</p></div></div>
+    </div>
+    <div class="result">
+      <div class="wrap">
+        <h2 id="res-title">Направления поддержки для вашей организации</h2>
+        <p class="result__lead"><span id="res-region"></span> Начните с карточек в статусе «Соответствует базовым критериям». Нажмите на красную кнопку в карточке, чтобы открыть документы и шаги.</p>
+        <div class="legend" aria-label="Статусы">
+          <span class="status status--match">Соответствует базовым критериям</span>
+          <span class="status status--msp_all">Доступно всем субъектам МСП</span>
+          <span class="status status--check">Может подойти, нужна проверка условий</span>
+        </div>
+
+        <h3 class="block-title" id="res-main-title"></h3>
+        <div class="cards" id="res-main"></div>
+
+        <div id="res-clients-wrap" hidden>
+          <h3 class="block-title" id="res-clients-title"></h3>
+          <p class="block-hint" id="res-clients-hint"></p>
+          <div class="clients"><div class="cards" id="res-clients"></div></div>
+        </div>
+
+        <div id="res-extra-wrap" hidden>
+          <h3 class="block-title" id="res-extra-title"></h3>
+          <div class="extra" id="res-extra"></div>
+        </div>
+
+        <div class="final">
+          <h3>Разберём вашу ситуацию вместе</h3>
+          <p>Юристы «АРМА» помогут проверить условия, собрать документы и подать заявку.</p>
+          <div class="final__actions">
+            <span class="btn--cta-wrap"><button id="btn-help" class="btn btn--cta" type="button">Нужна помощь</button></span>
+            <button id="btn-print" class="btn btn--ghost" type="button">Сохранить результат</button>
+            <button id="btn-restart" class="btn btn--ghost" type="button">Пройти заново</button>
+          </div>
+        </div>
+
+        <section id="help" class="q no-print" hidden aria-labelledby="help-title">
+          <h3 id="help-title" class="q__label">Заявка на консультацию</h3>
+          <p class="q__hint">Вместе с контактами мы получим ваши ответы и найденные направления, чтобы не задавать вопросы повторно.</p>
+          <form id="help-form" class="form" autocomplete="on" novalidate>
+            <div class="field"><label for="f-name">Имя</label><input class="input" id="f-name" name="name" required autocomplete="name"></div>
+            <div class="field"><label for="f-phone">Телефон</label><input class="input" id="f-phone" name="phone" type="tel" required autocomplete="tel" inputmode="tel"></div>
+            <div class="field"><label for="f-email">Электронная почта, по желанию</label><input class="input" id="f-email" name="email" type="email" autocomplete="email"></div>
+            <div class="field"><label for="f-messenger">Удобный мессенджер</label><select class="input" id="f-messenger" name="messenger"><option value="">Не важно</option><option>Telegram</option><option>WhatsApp</option><option>MAX</option><option>Звонок</option></select></div>
+            <div class="field"><label for="f-comment">Комментарий</label><textarea class="input input--area" id="f-comment" name="comment" rows="3"></textarea></div>
+            <div class="sr-only" aria-hidden="true"><label for="f-website">Сайт</label><input id="f-website" name="website" tabindex="-1" autocomplete="off"></div>
+            <div class="consent">
+              <label class="opt"><input type="checkbox" name="consent" id="f-consent"><span>Даю <a href="soglasie.html" target="_blank" rel="noopener">согласие на обработку персональных данных</a></span></label>
+              <p class="consent__policy"><a href="https://arma-jurist.ru/politika-konfidencialnosti" target="_blank" rel="noopener">Политика обработки персональных данных АРМА</a></p>
+            </div>
+            <div><span class="btn--cta-wrap"><button class="btn btn--cta" type="submit">Записаться на консультацию</button></span></div>
+            <p id="form-msg" role="status" aria-live="polite"></p>
+          </form>
+        </section>
+
+        <div class="meta">
+          <p id="res-date"></p>
+          <p id="res-disclaimer"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+</body>
+</html>
